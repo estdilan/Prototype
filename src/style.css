@@ -1,0 +1,176 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+#renderCanvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  touch-action: none;
+  outline: none;
+}
+
+/* ── Loading overlay ─────────────────────────────────────────── */
+#loading {
+  position: fixed; inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 100;
+}
+#loading-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.5);
+}
+#loading-bar {
+  width: 220px; height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+#loading-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+  width: 0;
+  transition: width 0.15s ease-out;
+}
+
+/* ── Error overlay ───────────────────────────────────────────── */
+#error-box {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.9);
+  color: #f55; font-family: monospace; font-size: 14px;
+  padding: 40px; white-space: pre-wrap;
+  z-index: 999;
+}
+
+/* ── Mic error banner ────────────────────────────────────────── */
+#mic-error {
+  display: none;
+  position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(255,50,50,0.18);
+  border: 1px solid rgba(255,80,80,0.45);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Arial', sans-serif;
+  font-size: 13px;
+  color: rgba(255,200,200,0.9);
+  text-align: center;
+  max-width: 340px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── Score ────────────────────────────────────────────────────── */
+#score {
+  position: fixed;
+  top: 22px; right: 90px;
+  font-family: 'Arial', sans-serif;
+  font-size: 54px; font-weight: 700;
+  color: rgba(255,255,255,0.88);
+  pointer-events: none;
+  transition: transform 0.1s ease-out;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+#score.bump { transform: scale(1.35); }
+
+/* ── Spawn progress bar ───────────────────────────────────────── */
+#spawn-progress {
+  display: none;
+  position: fixed;
+  bottom: 30px;
+  left: 50%; transform: translateX(-50%);
+  width: 200px; height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  z-index: 10;
+}
+#spawn-progress-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  border-radius: 2px;
+  width: 0;
+  transition: width 0.06s linear;
+}
+
+/* ── Microphone ───────────────────────────────────────────────── */
+#mic-wrap {
+  position: fixed;
+  right: 24px;
+  top: 50%; transform: translateY(-50%);
+  width: 58px; height: 58px;
+  display: none;
+  pointer-events: none;
+  z-index: 10;
+}
+#mic-wrap svg { width: 100%; height: 100%; }
+
+#mic-wrap.idle svg {
+  animation: glow-idle 1.6s ease-in-out infinite;
+}
+@keyframes glow-idle {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+  50%       { filter: drop-shadow(0 0 16px rgba(255,255,255,0.9)); }
+}
+#mic-wrap.c-rojo     svg { filter: drop-shadow(0 0 18px #e74c3c); animation: none; }
+#mic-wrap.c-azul     svg { filter: drop-shadow(0 0 18px #3498db); animation: none; }
+#mic-wrap.c-verde    svg { filter: drop-shadow(0 0 18px #2ecc71); animation: none; }
+#mic-wrap.c-amarillo svg { filter: drop-shadow(0 0 18px #f1c40f); animation: none; }
+#mic-wrap.error svg  { filter: drop-shadow(0 0 18px #f55);       animation: none; }
+
+/* ── Victory screen ──────────────────────────────────────────── */
+#victory {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 50;
+}
+#victory.show { display: flex; }
+
+#victory-label {
+  font-family: 'Arial', sans-serif;
+  font-size: 13px; font-weight: 400;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+#victory-score {
+  font-family: 'Arial', sans-serif;
+  font-size: 100px; font-weight: 700;
+  color: #fff; line-height: 1;
+  animation: pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+#victory-restart {
+  margin-top: 12px;
+  padding: 13px 42px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 40px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Arial', sans-serif;
+  font-size: 15px; font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+#victory-restart:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #fff;
+  color: #fff;
+}
+@keyframes pop-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
