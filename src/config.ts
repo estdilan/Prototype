@@ -33,10 +33,10 @@ export const CONFIG = {
   // These define where pellets pass through to score.
   // Tune these values to match the actual gaps in platform.glb.
   slits: [
-    { xMin:  6.4, xMax:  11,   zMin: -3.45, zMax:  3.45 },  // +X gap
-    { xMin: -11,  xMax: -6.4,  zMin: -3.45, zMax:  3.45 },  // -X gap
-    { xMin: -3.45, xMax: 3.45, zMin:  6.4,  zMax:  11   },  // +Z gap
-    { xMin: -3.45, xMax: 3.45, zMin: -11,   zMax: -6.4  },  // -Z gap
+    { xMin:  6.4, xMax:  7.0,  zMin: -3.6, zMax:  3.6 },  // +X gap
+    { xMin: -7.0, xMax: -6.4,  zMin: -3.6, zMax:  3.6 },  // -X gap
+    { xMin: -3.6, xMax:  3.6,  zMin:  6.4, zMax:  7.0 },  // +Z gap
+    { xMin: -3.6, xMax:  3.6,  zMin: -7.0, zMax: -6.4 },  // -Z gap
   ],
   tilt: {
     baseDeg: 8,

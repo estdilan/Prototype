@@ -19,7 +19,7 @@ const CENTER_HALF      = 6.4;   // half side of the central piece
 const SLIT_WIDTH       = 1.0;   // slit channel width
 const EDGE_BAR_WIDTH   = 1.0;   // outer border bar width
 const CORNER_INSET     = 0.5;   // amount the rounded corner is pulled in
-const SLIT_HALF_LENGTH = 3.45;  // half-length of the actual slit gap (perpendicular to slit's radial axis)
+const SLIT_HALF_LENGTH = 3.6;  // half-length of the actual slit gap (perpendicular to slit's radial axis)
 
 // Derived helpers
 const SLIT_OUTER     = CENTER_HALF + SLIT_WIDTH;                  // 7.4
@@ -42,19 +42,27 @@ const FILL_OFFSET    = (CENTER_HALF + SLIT_HALF_LENGTH) / 2;      // perpendicul
 //   - tipZ:  thin strip extending outward along +Z
 type Section = { name: string; lx: number; lz: number; w: number; d: number; group: string };
 
+// Number of sub-divisions used to approximate the rounded chamfer at the corner tip.
+// Cells of the SUBDIV × SUBDIV grid whose center is below the diagonal cut are filled.
+// Higher values → smoother curve (and more physics bodies).
+const CORNER_SUBDIV = 4;
+
 function buildCorner(
   group: string,
   signX: 1 | -1,
   signZ: 1 | -1,
 ): Section[] {
-  const innerSize = SLIT_OUTER === PLATFORM_HALF ? 0 : (PLATFORM_HALF - SLIT_OUTER - CORNER_INSET);
-  const innerHalf = innerSize / 2;
-  const innerCenter = SLIT_OUTER + innerHalf;
+  // Corner spans from CENTER_HALF (touching orange fills + cyan edges)
+  // to PLATFORM_HALF, with the absolute corner pulled in by CORNER_INSET
+  // to simulate the rounded tip.
+  const innerSize   = PLATFORM_HALF - CENTER_HALF - CORNER_INSET;
+  const innerHalf   = innerSize / 2;
+  const innerCenter = CENTER_HALF + innerHalf;
 
   const tipThick = CORNER_INSET;
   const tipLen   = innerSize;
 
-  return [
+  const sections: Section[] = [
     {
       name: `${group}_inner`,
       lx: signX * innerCenter,
@@ -80,6 +88,30 @@ function buildCorner(
       group,
     },
   ];
+
+  // Staircase chamfer approximation: divide the outer CORNER_INSET × CORNER_INSET
+  // square into a SUBDIV × SUBDIV sub-grid and fill only the cells below the
+  // diagonal (i + j < SUBDIV - 1) so the uncovered region has a stepped curve.
+  const subThick    = CORNER_INSET / CORNER_SUBDIV;
+  const cornerStart = PLATFORM_HALF - CORNER_INSET;
+
+  for (let i = 0; i < CORNER_SUBDIV; i++) {
+    for (let j = 0; j < CORNER_SUBDIV; j++) {
+      if (i + j >= CORNER_SUBDIV - 1) continue;
+      const cx = cornerStart + (i + 0.5) * subThick;
+      const cz = cornerStart + (j + 0.5) * subThick;
+      sections.push({
+        name: `${group}_chmf_${i}_${j}`,
+        lx: signX * cx,
+        lz: signZ * cz,
+        w: subThick,
+        d: subThick,
+        group,
+      });
+    }
+  }
+
+  return sections;
 }
 
 export async function loadPlatform(scene: Scene, ui: UIManager): Promise<PlatformResult> {
