@@ -32,6 +32,7 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   cam.attachControl(canvas, true);
   cam.lowerRadiusLimit = CONFIG.camera.minRadius;
   cam.upperRadiusLimit = CONFIG.camera.maxRadius;
+  cam.checkCollisions  = true;
 
   const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene);
   hemi.intensity   = 0.5;

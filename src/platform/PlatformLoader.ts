@@ -1,7 +1,6 @@
 import {
   Scene, SceneLoader, MeshBuilder, PhysicsImpostor,
   Quaternion, AbstractMesh, Mesh, Vector3, Matrix,
-  StandardMaterial, Color3,
 } from '@babylonjs/core';
 import { CONFIG } from '../config';
 import type { UIManager } from '../ui/UIManager';
@@ -18,7 +17,7 @@ const PLATFORM_HALF    = 8.0;   // half side of the GLB (16×16 platform)
 const CENTER_HALF      = 6.4;   // half side of the central piece
 const SLIT_WIDTH       = 1.0;   // slit channel width
 const EDGE_BAR_WIDTH   = 1.0;   // outer border bar width
-const CORNER_INSET     = 0.5;   // amount the rounded corner is pulled in
+const CORNER_INSET     = 1.0;   // amount the rounded corner is pulled in
 const SLIT_HALF_LENGTH = 3.6;  // half-length of the actual slit gap (perpendicular to slit's radial axis)
 
 // Derived helpers
@@ -177,27 +176,13 @@ export async function loadPlatform(scene: Scene, ui: UIManager): Promise<Platfor
     ...buildCorner('sw', -1, -1),
   ];
 
-  // DEBUG: one color per group for visual alignment
-  const groupColor: Record<string, Color3> = {
-    center: new Color3(1.0, 1.0, 0.0),  // amarillo
-    edge:   new Color3(0.0, 1.0, 1.0),  // cyan
-    fill:   new Color3(1.0, 0.55, 0.0), // naranja
-    ne:     new Color3(1.0, 0.2, 0.2),  // rojo
-    nw:     new Color3(0.2, 1.0, 0.2),  // verde
-    se:     new Color3(0.2, 0.4, 1.0),  // azul
-    sw:     new Color3(1.0, 0.2, 1.0),  // magenta
-  };
-
   const sections: Array<{ box: Mesh; lx: number; lz: number }> = [];
 
   for (const s of sectionDefs) {
     if (s.w <= 0 || s.d <= 0) continue;  // skip degenerate sections
     const box = MeshBuilder.CreateBox(`platform_${s.name}`, { width: s.w, height: h, depth: s.d }, scene);
-    const mat = new StandardMaterial(`dbg_${s.name}`, scene);
-    mat.diffuseColor = groupColor[s.group] ?? new Color3(0.6, 0.6, 0.6);
-    mat.alpha        = 0.45;
-    box.material     = mat;
-    box.isVisible    = true;
+    box.isVisible        = false;
+    box.checkCollisions  = true;
     box.rotationQuaternion = Quaternion.Identity();
     box.position.set(s.lx, CONFIG.platform.y, s.lz);
     box.physicsImpostor = new PhysicsImpostor(

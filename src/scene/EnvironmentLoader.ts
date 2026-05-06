@@ -16,6 +16,7 @@ export async function loadEnvironment(scene: Scene, ui: UIManager): Promise<void
     }
   });
   stadiumResult.meshes[0].scaling.setAll(0.5);
+  stadiumResult.meshes.forEach(m => { m.checkCollisions = true; });
 
   // --- Jumbotron ---
   ui.setLoadingProgress(0.6, 'Cargando jumbotron...');
