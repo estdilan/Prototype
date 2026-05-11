@@ -4,18 +4,21 @@ export type ColorName = 'rojo' | 'azul' | 'verde' | 'amarillo';
 
 export const CONFIG = {
   pellets: {
-    total: 100,
+    total: 10,
     spawnIntervalMs: 8,
-    diameter: 0.4,
-    segments: 5,
+    scale: 0.4,
     spawnXZ: 3.2,
     spawnYMin: 6.0,
     spawnYMax: 18,
     exitY: 2.0,
     safetyY: -20,
-    mass: 4,
-    restitution: 0.10,
-    friction: 0.55,
+    physHeight: 0.20,
+    physBase: -0.28,   // Y offset del visual relativo al centro del cilindro físico; tantear junto con physHeight
+    mass: 5,
+    restitution: 0.08,
+    friction: 0.03,
+    linearDamping: 0.06,
+    angularDamping: 0.35,
     initialVelocityY: -18,
     respawnVelocityY: -15,
   },
@@ -25,9 +28,10 @@ export const CONFIG = {
     width: 12,
     height: 0.5,
     depth: 12,
-    y: 3,
+    y: 4.4,
+    visualOffsetY: 0,   // desplaza solo el mesh visual de la plataforma; tantear en pasos de 0.05 para cerrar el gap
     restitution: 0.05,
-    friction: 0.6,
+    friction: 0.05,
   },
   // Slit AABBs in world space (platform center at origin).
   // These define where pellets pass through to score.
@@ -53,13 +57,20 @@ export const CONFIG = {
     colorLockMs: 400,
     lang: 'es-ES',
   },
+  jumbotron: {
+    x: 0,
+    y: 5.5,   // justo encima de la plataforma (platform.y + platform.height ≈ 4.9)
+    z: 0,
+    scale: 1.0,
+  },
   camera: {
     alpha: -Math.PI / 4,
-    beta: Math.acos(14 / 20),
-    radius: 20,
-    fovDeg: 60,
+    beta: Math.acos(5 / 9),
+    y: 6.2,
+    radius: 42,
+    fovDeg: 28,
     minRadius: 8,
-    maxRadius: 50,
+    maxRadius: 70,
   },
   colors: {
     rojo:     { hex: '#e74c3c', r: 0.91, g: 0.30, b: 0.24 },

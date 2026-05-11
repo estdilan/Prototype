@@ -39,6 +39,8 @@ export class GameManager {
 
     this.pellets.onVictory = () => this.#enterVictory();
 
+    await this.pellets.init();
+
     this.voice = new VoiceController({
       onColor:   (color) => this.platform.trigger(color),
       onSilence: ()      => this.platform.silence(),

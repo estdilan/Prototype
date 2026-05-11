@@ -1,8 +1,9 @@
 import {
   Engine, Scene, Color3, Color4, Vector3,
   ArcRotateCamera, HemisphericLight, DirectionalLight,
-  CannonJSPlugin,
 } from '@babylonjs/core';
+import { CannonJSPlugin } from '@babylonjs/core/Physics/v1/Plugins/cannonJSPlugin';
+import '@babylonjs/core/Physics/joinedPhysicsEngineComponent';
 import * as CANNON from 'cannon-es';
 import { CONFIG, DEG2RAD } from '../config';
 
@@ -25,7 +26,7 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
     CONFIG.camera.alpha,
     CONFIG.camera.beta,
     CONFIG.camera.radius,
-    Vector3.Zero(),
+    new Vector3(0, CONFIG.camera.y, 0),
     scene,
   );
   cam.fov = CONFIG.camera.fovDeg * DEG2RAD;

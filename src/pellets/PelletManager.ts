@@ -1,13 +1,17 @@
 import {
-  Scene, MeshBuilder, StandardMaterial, Color3,
-  Vector3, PhysicsImpostor, AbstractMesh,
+  Scene, SceneLoader, MeshBuilder,
+  Vector3, AbstractMesh, TransformNode,
+  PBRMaterial, Color3, StandardMaterial,
 } from '@babylonjs/core';
+import { PhysicsImpostor } from '@babylonjs/core/Physics/v1/physicsImpostor';
+import '@babylonjs/core/Physics/v1/physicsEngineComponent';
 import { CONFIG } from '../config';
 import { SlitDetector } from './SlitDetector';
 import type { UIManager } from '../ui/UIManager';
 
 interface Pellet {
-  mesh: AbstractMesh;
+  physMesh: AbstractMesh;
+  visual: TransformNode;
 }
 
 export class PelletManager {
@@ -16,8 +20,11 @@ export class PelletManager {
   private slit: SlitDetector;
   private pellets: Pellet[] = [];
   private counter = 0;
-  private material: StandardMaterial;
   private score = 0;
+
+  private templateRoot: AbstractMesh | null = null;
+  private pelletDims = { radius: 0.2, height: 0.1 };
+  private visualOffset = Vector3.Zero();
 
   onVictory?: () => void;
 
@@ -25,41 +32,81 @@ export class PelletManager {
     this.scene = scene;
     this.ui    = ui;
     this.slit  = slit;
+  }
 
-    this.material = new StandardMaterial('pelletMat', scene);
-    this.material.diffuseColor  = new Color3(0.92, 0.87, 0.72);
-    this.material.specularColor = new Color3(0.25, 0.25, 0.25);
+  async init(): Promise<void> {
+    const result = await SceneLoader.ImportMeshAsync('', '/models/', 'Pellet.glb', this.scene);
+    const root = result.meshes[0];
+    root.scaling.setAll(CONFIG.pellets.scale);
+    // Rotate so the disc lies flat (converts Z-up FBX orientation to Y-up)
+    root.rotation.x = Math.PI / 2;
+    root.computeWorldMatrix(true);
+    root.getChildMeshes().forEach(m => m.computeWorldMatrix(true));
+
+    const { min, max } = root.getHierarchyBoundingVectors(true);
+    const size = max.subtract(min);
+    const dims = [size.x, size.y, size.z].sort((a, b) => a - b);
+    const bbCenter = min.add(max).scale(0.5);
+    // physHeight is explicit in config so it can be tuned independently of the GLB bounding box.
+    // visualOffset.y = -physHeight/2 ensures the disc bottom sits flush on the platform surface.
+    this.pelletDims = { radius: dims[2] / 2, height: CONFIG.pellets.physHeight };
+    this.visualOffset = new Vector3(-bbCenter.x, CONFIG.pellets.physBase, -bbCenter.z);
+
+    const mat = new PBRMaterial('pelletMat', this.scene);
+    mat.albedoColor = new Color3(0.12, 0.12, 0.12);
+    mat.metallic = 0.2;
+    mat.roughness = 0.75;
+    root.getChildMeshes().forEach(m => { m.material = mat; });
+
+    root.setEnabled(false);
+    this.templateRoot = root;
   }
 
   spawn(): void {
     const pos = this.#randomPos();
-    const mesh = MeshBuilder.CreateSphere(
-      `p${this.counter++}`,
-      { diameter: CONFIG.pellets.diameter, segments: CONFIG.pellets.segments },
-      this.scene,
-    );
-    mesh.position.set(pos.x, pos.y, pos.z);
-    mesh.material   = this.material;
-    mesh.isPickable = false;
+    const name = `p${this.counter++}`;
 
-    mesh.physicsImpostor = new PhysicsImpostor(
-      mesh,
-      PhysicsImpostor.SphereImpostor,
+    const physMesh = MeshBuilder.CreateCylinder(name, {
+      diameter: this.pelletDims.radius * 2,
+      height: this.pelletDims.height,
+    }, this.scene);
+    const debugMat = new StandardMaterial(name + '_dbg', this.scene);
+    debugMat.wireframe = true;
+    debugMat.emissiveColor = new Color3(1, 0.2, 0);
+    physMesh.material = debugMat;
+    physMesh.isPickable = false;
+    physMesh.position.set(pos.x, pos.y, pos.z);
+
+    const visual = this.templateRoot!.instantiateHierarchy(physMesh)!;
+    visual.position.copyFrom(this.visualOffset);
+    visual.setEnabled(true);
+
+    physMesh.physicsImpostor = new PhysicsImpostor(
+      physMesh,
+      PhysicsImpostor.CylinderImpostor,
       { mass: CONFIG.pellets.mass, restitution: CONFIG.pellets.restitution, friction: CONFIG.pellets.friction },
       this.scene,
     );
-    mesh.physicsImpostor.setLinearVelocity(new Vector3(0, CONFIG.pellets.initialVelocityY, 0));
 
-    this.pellets.push({ mesh });
+    const body = physMesh.physicsImpostor.physicsBody;
+    body.linearDamping  = CONFIG.pellets.linearDamping;
+    body.angularDamping = CONFIG.pellets.angularDamping;
+    body.allowSleep     = true;
+    body.sleepSpeedLimit = 0.5;
+    body.sleepTimeLimit  = 1.0;
+    body.angularFactor.set(0, 1, 0);
+
+    physMesh.physicsImpostor.setLinearVelocity(new Vector3(0, CONFIG.pellets.initialVelocityY, 0));
+
+    this.pellets.push({ physMesh, visual });
   }
 
   update(): void {
     const { exitY, safetyY } = CONFIG.pellets;
 
-    // Iterate backwards so splicing is safe
     for (let i = this.pellets.length - 1; i >= 0; i--) {
-      const { mesh } = this.pellets[i];
-      const { x, y, z } = mesh.position;
+      const { physMesh } = this.pellets[i];
+      const { x, y, z } = physMesh.position;
 
       if (y < exitY) {
         if (this.slit.isInSlit(x, z)) {
@@ -88,17 +135,18 @@ export class PelletManager {
   }
 
   #respawn(idx: number): void {
-    const { mesh } = this.pellets[idx];
+    const { physMesh } = this.pellets[idx];
     const p = this.#randomPos();
-    mesh.position.set(p.x, p.y, p.z);
-    mesh.physicsImpostor?.setLinearVelocity(new Vector3(0, CONFIG.pellets.respawnVelocityY, 0));
-    mesh.physicsImpostor?.setAngularVelocity(Vector3.Zero());
+    physMesh.position.set(p.x, p.y, p.z);
+    physMesh.physicsImpostor?.setLinearVelocity(new Vector3(0, CONFIG.pellets.respawnVelocityY, 0));
+    physMesh.physicsImpostor?.setAngularVelocity(Vector3.Zero());
   }
 
   #score(idx: number): void {
-    const { mesh } = this.pellets[idx];
-    mesh.physicsImpostor?.dispose();
-    mesh.dispose();
+    const { physMesh, visual } = this.pellets[idx];
+    visual.dispose();
+    physMesh.physicsImpostor?.dispose();
+    physMesh.dispose();
     this.pellets.splice(idx, 1);
 
     this.score++;

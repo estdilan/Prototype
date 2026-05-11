@@ -1,7 +1,9 @@
 import {
-  Scene, SceneLoader, MeshBuilder, PhysicsImpostor,
+  Scene, SceneLoader, MeshBuilder,
   Quaternion, AbstractMesh, Mesh, Vector3, Matrix,
 } from '@babylonjs/core';
+import { PhysicsImpostor } from '@babylonjs/core/Physics/v1/physicsImpostor';
+import '@babylonjs/core/Physics/v1/physicsEngineComponent';
 import { CONFIG } from '../config';
 import type { UIManager } from '../ui/UIManager';
 
@@ -15,13 +17,11 @@ export interface PlatformResult {
 // ---- Tunable layout constants (in platform local units) ----
 const PLATFORM_HALF    = 8.0;   // half side of the GLB (16×16 platform)
 const CENTER_HALF      = 6.4;   // half side of the central piece
-const SLIT_WIDTH       = 1.0;   // slit channel width
 const EDGE_BAR_WIDTH   = 1.0;   // outer border bar width
 const CORNER_INSET     = 1.0;   // amount the rounded corner is pulled in
 const SLIT_HALF_LENGTH = 3.6;  // half-length of the actual slit gap (perpendicular to slit's radial axis)
 
 // Derived helpers
-const SLIT_OUTER     = CENTER_HALF + SLIT_WIDTH;                  // 7.4
 const EDGE_CENTER    = PLATFORM_HALF - EDGE_BAR_WIDTH / 2;        // 7.5
 const EDGE_INNER     = PLATFORM_HALF - EDGE_BAR_WIDTH;            // 7.0  (inner edge of border bar)
 const EDGE_LEN       = CENTER_HALF * 2;                           // 12.8 (length along the bar's long axis)
@@ -214,7 +214,11 @@ export async function loadPlatform(scene: Scene, ui: UIManager): Promise<Platfor
 
   // Visual mesh parented to root with centering offset.
   visualRoot.parent = root;
-  visualRoot.position = boundsCenter.negate();
+  visualRoot.position = new Vector3(
+    -boundsCenter.x,
+    -boundsCenter.y + CONFIG.platform.visualOffsetY,
+    -boundsCenter.z,
+  );
 
   return { collider: root as unknown as Mesh, visualRoot };
 }

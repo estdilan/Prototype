@@ -1,4 +1,5 @@
-import { Scene, SceneLoader } from '@babylonjs/core';
+import { Scene, SceneLoader, Vector3 } from '@babylonjs/core';
+import { CONFIG } from '../config';
 import type { UIManager } from '../ui/UIManager';
 
 // Stadium.glb is large (42 MB). Optimize it with gltf-transform before shipping:
@@ -20,11 +21,16 @@ export async function loadEnvironment(scene: Scene, ui: UIManager): Promise<void
 
   // --- Jumbotron ---
   ui.setLoadingProgress(0.6, 'Cargando jumbotron...');
-  await SceneLoader.ImportMeshAsync('', '/models/', 'jumbotron.glb', scene, (evt) => {
+  const jumbotronResult = await SceneLoader.ImportMeshAsync('', '/models/', 'jumbotron.glb', scene, (evt) => {
     if (evt.total > 0) {
-      // Scale jumbotron progress to 60-80% of total loading bar
       const pct = 0.6 + (evt.loaded / evt.total) * 0.2;
       ui.setLoadingProgress(pct, 'Cargando jumbotron...');
     }
   });
+  const jRoot = jumbotronResult.meshes[0];
+  jRoot.position = new Vector3(CONFIG.jumbotron.x, CONFIG.jumbotron.y, CONFIG.jumbotron.z);
+  jRoot.scaling.setAll(CONFIG.jumbotron.scale);
+  const jBounds = jRoot.getHierarchyBoundingVectors(true);
+  console.log(`[Jumbotron] bounds size: ${(jBounds.max.x - jBounds.min.x).toFixed(2)} × ${(jBounds.max.y - jBounds.min.y).toFixed(2)} × ${(jBounds.max.z - jBounds.min.z).toFixed(2)}`);
+  console.log(`[Jumbotron] position: ${jRoot.position}`);
 }
