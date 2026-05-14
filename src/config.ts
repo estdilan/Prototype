@@ -85,4 +85,8 @@ export const CONFIG = {
     verde:    { x: -1, z:  1 },
     amarillo: { x: -1, z: -1 },
   } as Record<ColorName, { x: number; z: number }>,
+  game: {
+    timerSeconds: 60,
+    warningThresholdSec: 30,
+  },
 };

@@ -8,7 +8,7 @@ import { VoiceController } from '../voice/VoiceController';
 import { UIManager } from '../ui/UIManager';
 import { CONFIG } from '../config';
 
-type GameState = 'LOADING' | 'SPAWNING' | 'PLAYING' | 'VICTORY';
+type GameState = 'LOADING' | 'START' | 'SPAWNING' | 'PLAYING' | 'VICTORY' | 'GAME_OVER';
 
 export class GameManager {
   private scene: Scene;
@@ -18,6 +18,9 @@ export class GameManager {
   private platform!: PlatformController;
   private pellets!: PelletManager;
   private voice!: VoiceController;
+
+  private countdownInterval: ReturnType<typeof setInterval> | null = null;
+  private timeLeft = 0;
 
   constructor(scene: Scene, ui: UIManager) {
     this.scene = scene;
@@ -56,8 +59,19 @@ export class GameManager {
       }
     });
 
-    // 4. Start game
+    // 4. Show start screen
+    this.ui.onStart = () => this.#onStartPressed();
     this.ui.hideLoading();
+    this.#enterStart();
+  }
+
+  #enterStart(): void {
+    this.state = 'START';
+    this.ui.showStartScreen();
+  }
+
+  #onStartPressed(): void {
+    this.ui.hideStartScreen();
     this.#startSpawning();
   }
 
@@ -84,15 +98,46 @@ export class GameManager {
     this.ui.hideSpawnBar();
     this.ui.showMic();
     this.ui.setMicIdle();
+    this.ui.showTimer();
+    this.#startCountdown();
     this.voice.start();
     console.log('[Rockey] Playing — voice enabled');
   }
 
+  #startCountdown(): void {
+    this.timeLeft = CONFIG.game.timerSeconds;
+    this.ui.updateTimer(this.timeLeft);
+    this.countdownInterval = setInterval(() => {
+      this.timeLeft--;
+      this.ui.updateTimer(this.timeLeft);
+      if (this.timeLeft <= 0) this.#enterGameOver();
+    }, 1000);
+  }
+
+  #clearCountdown(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+  }
+
   #enterVictory(): void {
     this.state = 'VICTORY';
+    this.#clearCountdown();
     this.voice.stop();
     this.ui.hideMic();
+    this.ui.hideTimer();
     this.ui.showVictory(this.pellets.currentScore);
     console.log('[Rockey] Victory!');
+  }
+
+  #enterGameOver(): void {
+    this.state = 'GAME_OVER';
+    this.#clearCountdown();
+    this.voice.stop();
+    this.ui.hideMic();
+    this.ui.hideTimer();
+    this.ui.showGameOver(this.pellets.currentScore);
+    console.log('[Rockey] Game Over — time ran out');
   }
 }

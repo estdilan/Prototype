@@ -13,6 +13,12 @@ export class UIManager {
   private loadingFill: HTMLElement;
   private loadingText: HTMLElement;
   private micError: HTMLElement;
+  private timerEl: HTMLElement;
+  private gameOverEl: HTMLElement;
+  private gameOverNum: HTMLElement;
+  private startScreenEl: HTMLElement;
+
+  onStart?: () => void;
 
   constructor() {
     this.scoreEl     = this.#q('#score');
@@ -27,8 +33,14 @@ export class UIManager {
     this.loadingFill = this.#q('#loading-fill');
     this.loadingText = this.#q('#loading-text');
     this.micError    = this.#q('#mic-error');
+    this.timerEl      = this.#q('#timer');
+    this.gameOverEl   = this.#q('#game-over');
+    this.gameOverNum  = this.#q('#game-over-score');
+    this.startScreenEl = this.#q('#start-screen');
 
     this.#q('#victory-restart').addEventListener('click', () => window.location.reload());
+    this.#q('#game-over-restart').addEventListener('click', () => window.location.reload());
+    this.#q('#start-btn').addEventListener('click', () => this.onStart?.());
   }
 
   #q(sel: string): HTMLElement {
@@ -97,5 +109,37 @@ export class UIManager {
   showVictory(finalScore: number): void {
     this.victoryNum.textContent = String(finalScore);
     this.victoryEl.classList.add('show');
+  }
+
+  showStartScreen(): void {
+    this.startScreenEl.classList.add('show');
+  }
+
+  hideStartScreen(): void {
+    this.startScreenEl.classList.remove('show');
+  }
+
+  showTimer(): void {
+    this.timerEl.style.display = 'block';
+  }
+
+  hideTimer(): void {
+    this.timerEl.style.display = 'none';
+  }
+
+  updateTimer(seconds: number): void {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    this.timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+    if (seconds <= CONFIG.game.warningThresholdSec) {
+      this.timerEl.classList.add('warning');
+    } else {
+      this.timerEl.classList.remove('warning');
+    }
+  }
+
+  showGameOver(score: number): void {
+    this.gameOverNum.textContent = String(score);
+    this.gameOverEl.classList.add('show');
   }
 }
