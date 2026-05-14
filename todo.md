@@ -1,4 +1,0 @@
-- Terminar de ajustar las esquinas para que se ajusten de mejor forma al modelo
-- Limitar que la camara pueda atravesar los modelos del escenario o la plataforma
-- Reemplazar los pellets esfericos con el modelo de pellets de disco de hockey (Verificar movimiento y fricción de los pellets con la superficie de la plataforma)
-- Mejorar el reconocimiento y las dinamicas que mueven la plataforma
