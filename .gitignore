@@ -5,3 +5,10 @@ dist/
 *.log
 .DS_Store
 .vscode/settings.json
+
+# npm
+package-lock.json
+.npm
+.npmrc
+.cache
+*.tsbuildinfo
