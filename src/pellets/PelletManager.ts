@@ -1,7 +1,7 @@
 import {
   Scene, SceneLoader, MeshBuilder,
   Vector3, AbstractMesh, TransformNode,
-  PBRMaterial, Color3, StandardMaterial,
+  PBRMaterial, Color3,
 } from '@babylonjs/core';
 import { PhysicsImpostor } from '@babylonjs/core/Physics/v1/physicsImpostor';
 import '@babylonjs/core/Physics/v1/physicsEngineComponent';
@@ -70,10 +70,7 @@ export class PelletManager {
       diameter: this.pelletDims.radius * 2,
       height: this.pelletDims.height,
     }, this.scene);
-    const debugMat = new StandardMaterial(name + '_dbg', this.scene);
-    debugMat.wireframe = true;
-    debugMat.emissiveColor = new Color3(1, 0.2, 0);
-    physMesh.material = debugMat;
+    physMesh.isVisible = false;
     physMesh.isPickable = false;
     physMesh.position.set(pos.x, pos.y, pos.z);
 
@@ -102,11 +99,16 @@ export class PelletManager {
   }
 
   update(): void {
-    const { exitY, safetyY } = CONFIG.pellets;
+    const { exitY, safetyY, maxUpVelocityY } = CONFIG.pellets;
 
     for (let i = this.pellets.length - 1; i >= 0; i--) {
       const { physMesh } = this.pellets[i];
       const { x, y, z } = physMesh.position;
+
+      const body = physMesh.physicsImpostor?.physicsBody;
+      if (body && body.velocity.y > maxUpVelocityY) {
+        body.velocity.y = maxUpVelocityY;
+      }
 
       if (y < exitY) {
         if (this.slit.isInSlit(x, z)) {

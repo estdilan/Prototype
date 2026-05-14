@@ -4,7 +4,7 @@ export type ColorName = 'rojo' | 'azul' | 'verde' | 'amarillo';
 
 export const CONFIG = {
   pellets: {
-    total: 10,
+    total: 100,
     spawnIntervalMs: 8,
     scale: 0.4,
     spawnXZ: 3.2,
@@ -16,11 +16,12 @@ export const CONFIG = {
     physBase: -0.28,   // Y offset del visual relativo al centro del cilindro físico; tantear junto con physHeight
     mass: 5,
     restitution: 0.08,
-    friction: 0.03,
+    friction: 0.02,
     linearDamping: 0.06,
     angularDamping: 0.35,
     initialVelocityY: -18,
     respawnVelocityY: -15,
+    maxUpVelocityY: 6,
   },
   platform: {
     // Fallback dimensions used if platform.glb bounding box cannot be computed.
@@ -31,7 +32,7 @@ export const CONFIG = {
     y: 4.4,
     visualOffsetY: 0,   // desplaza solo el mesh visual de la plataforma; tantear en pasos de 0.05 para cerrar el gap
     restitution: 0.05,
-    friction: 0.05,
+    friction: 0.02,
   },
   // Slit AABBs in world space (platform center at origin).
   // These define where pellets pass through to score.
