@@ -35,7 +35,7 @@ export class PelletManager {
   }
 
   async init(): Promise<void> {
-    const result = await SceneLoader.ImportMeshAsync('', '/models/', 'Pellet.glb', this.scene);
+    const result = await SceneLoader.ImportMeshAsync('', '/models/', 'pellet.glb', this.scene);
     const root = result.meshes[0];
     root.scaling.setAll(CONFIG.pellets.scale);
     // Rotate so the disc lies flat (converts Z-up FBX orientation to Y-up)
