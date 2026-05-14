@@ -6,6 +6,7 @@ import { SlitDetector } from '../pellets/SlitDetector';
 import { PelletManager } from '../pellets/PelletManager';
 import { VoiceController } from '../voice/VoiceController';
 import { UIManager } from '../ui/UIManager';
+import { AudioManager } from '../audio/AudioManager';
 import { CONFIG } from '../config';
 
 type GameState = 'LOADING' | 'START' | 'SPAWNING' | 'PLAYING' | 'VICTORY' | 'GAME_OVER';
@@ -18,6 +19,7 @@ export class GameManager {
   private platform!: PlatformController;
   private pellets!: PelletManager;
   private voice!: VoiceController;
+  private audio!: AudioManager;
 
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   private timeLeft = 0;
@@ -33,11 +35,12 @@ export class GameManager {
     const { collider } = await loadPlatform(this.scene, this.ui);
 
     // 2. Set up game systems
+    this.audio    = new AudioManager();
     this.platform = new PlatformController(collider);
     const slit    = new SlitDetector();
-    this.pellets  = new PelletManager(this.scene, this.ui, slit);
+    this.pellets  = new PelletManager(this.scene, this.ui, slit, this.audio);
 
-    this.platform.onTiltStart = (color) => this.ui.setMicColor(color);
+    this.platform.onTiltStart = (color) => { this.ui.setMicColor(color); this.audio.playPop(); };
     this.platform.onTiltEnd   = ()      => this.ui.setMicIdle();
 
     this.pellets.onVictory = () => this.#enterVictory();

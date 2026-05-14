@@ -7,6 +7,8 @@ import '@babylonjs/core/Physics/joinedPhysicsEngineComponent';
 import * as CANNON from 'cannon-es';
 import { CONFIG, DEG2RAD } from '../config';
 
+(window as any).CANNON = CANNON;
+
 export interface SceneContext {
   engine: Engine;
   scene: Scene;

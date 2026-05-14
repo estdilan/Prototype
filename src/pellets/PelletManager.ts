@@ -8,6 +8,7 @@ import '@babylonjs/core/Physics/v1/physicsEngineComponent';
 import { CONFIG } from '../config';
 import { SlitDetector } from './SlitDetector';
 import type { UIManager } from '../ui/UIManager';
+import type { AudioManager } from '../audio/AudioManager';
 
 interface Pellet {
   physMesh: AbstractMesh;
@@ -18,6 +19,7 @@ export class PelletManager {
   private scene: Scene;
   private ui: UIManager;
   private slit: SlitDetector;
+  private audio: AudioManager;
   private pellets: Pellet[] = [];
   private counter = 0;
   private score = 0;
@@ -28,10 +30,11 @@ export class PelletManager {
 
   onVictory?: () => void;
 
-  constructor(scene: Scene, ui: UIManager, slit: SlitDetector) {
+  constructor(scene: Scene, ui: UIManager, slit: SlitDetector, audio: AudioManager) {
     this.scene = scene;
     this.ui    = ui;
     this.slit  = slit;
+    this.audio = audio;
   }
 
   async init(): Promise<void> {
@@ -153,6 +156,7 @@ export class PelletManager {
 
     this.score++;
     this.ui.updateScore(this.score);
+    this.audio.playClick();
 
     if (this.score >= CONFIG.pellets.total) {
       this.onVictory?.();
