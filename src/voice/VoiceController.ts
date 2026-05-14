@@ -49,9 +49,9 @@ export class VoiceController {
     if (this.state === 'LISTENING') return;
     this.state = 'LISTENING';
 
-    const token = ((import.meta as any).env.VITE_DEEPGRAM_TOKEN);
+    const token = import.meta.env.VITE_DEEPGRAM_TOKEN;
     if (!token) {
-      this.cb.onError('Falta el token de Deepgram en el .env');
+      this.cb.onError('Falta el token de Deepgram en el .env.local');
       this.state = 'ERROR';
       return;
     }
