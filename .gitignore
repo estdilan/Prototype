@@ -6,6 +6,18 @@ dist/
 .DS_Store
 .vscode/settings.json
 
+# AI / agent tooling state
+.claude/
+.cursor/
+.windsurf/
+.continue/
+.roo/
+.copilot/
+.gemini/
+.aider/
+.vscode-test/
+.history/
+
 # npm
 package-lock.json
 .npm
