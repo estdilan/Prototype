@@ -12,3 +12,6 @@ package-lock.json
 .npmrc
 .cache
 *.tsbuildinfo
+
+# Vosk models (descargar localmente desde https://alphacephei.com/vosk/models)
+public/models/vosk-model-*
