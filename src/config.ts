@@ -89,4 +89,11 @@ export const CONFIG = {
     timerSeconds: 60,
     warningThresholdSec: 30,
   },
+  calibration: {
+    timeoutMs: 8000,        // Tiempo máximo para detectar un color
+    maxRetries: 2,          // Reintentos después de timeout
+    minAudioLevel: 0.05,    // Nivel mínimo de audio detectado
+    feedbackDurationMs: 600, // Duración de retroalimentación visual
+    words: ['rojo', 'azul', 'verde', 'amarillo'] as ColorName[],
+  },
 };

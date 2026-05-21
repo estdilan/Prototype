@@ -5,6 +5,8 @@ export class UIManager {
   private spawnBar: HTMLElement;
   private spawnFill: HTMLElement;
   private micWrap: HTMLElement;
+  private micFills: NodeListOf<Element>;
+  private micStrokes: NodeListOf<Element>;
   private victoryEl: HTMLElement;
   private victoryNum: HTMLElement;
   private loadingEl: HTMLElement;
@@ -17,20 +19,30 @@ export class UIManager {
   private gameOverEl: HTMLElement;
   private gameOverNum: HTMLElement;
   private startScreenEl: HTMLElement;
-  private toastContainer: HTMLElement;
-  private targetValue: HTMLElement;
+  private welcomeScreenEl: HTMLElement;
+  private calibrationScreenEl: HTMLElement;
+  private calibrationStatusEl: HTMLElement;
+  private calibrationReadyEl: HTMLElement;
+  private calibrationVisualizer: HTMLElement;
+  private startBtn: HTMLElement;
+  private welcomeStartBtn: HTMLElement;
   private statStreak: HTMLElement;
+  private calibrationItems = new Map<ColorName, HTMLElement>();
+  private calibrationFlashTimeout: number | null = null;
 
   private currentStreak = 0;
   private maxStreak = 0;
 
   onStart?: () => void;
+  onCalibrationComplete?: () => void;
 
   constructor() {
     this.scoreEl     = this.#q('#score');
     this.spawnBar    = this.#q('#spawn-progress');
     this.spawnFill   = this.#q('#spawn-progress-fill');
     this.micWrap     = this.#q('#mic-wrap');
+    this.micFills    = document.querySelectorAll('#mic-svg [fill]:not([fill="none"])');
+    this.micStrokes  = document.querySelectorAll('#mic-svg [stroke]');
     
     this.victoryEl   = this.#q('#victory');
     this.victoryNum  = this.#q('#victory-score');
@@ -44,55 +56,40 @@ export class UIManager {
     this.gameOverEl   = this.#q('#game-over');
     this.gameOverNum  = this.#q('#game-over-score');
     this.startScreenEl = this.#q('#start-screen');
-    this.toastContainer = this.#q('#toast-container');
-    this.targetValue  = this.#q('#target-value');
+    this.welcomeScreenEl = this.#q('#welcome-screen');
+    this.calibrationScreenEl = this.#q('#calibration-screen');
+    this.calibrationStatusEl = this.#q('#calibration-status');
+    this.calibrationReadyEl = this.#q('#calibration-ready');
+    this.calibrationVisualizer = this.#q('#calibration-visualizer');
+    this.startBtn = this.#q('#start-btn');
+    this.welcomeStartBtn = this.#q('#welcome-start-btn');
     this.statStreak   = this.#q('#stat-streak');
+
+    document.querySelectorAll<HTMLElement>('#calibration-list .calibration-item').forEach((item) => {
+      const color = item.dataset.color as ColorName | undefined;
+      if (color) this.calibrationItems.set(color, item);
+    });
 
     this.#q('#victory-restart').addEventListener('click', () => window.location.reload());
     this.#q('#game-over-restart').addEventListener('click', () => window.location.reload());
-    this.#q('#game-over-menu').addEventListener('click', () => window.location.reload());
     
     this.micFixBtn.addEventListener('click', () => {
       this.micFeedbackPanel.style.display = 'none';
-      this.showToast('Reintentando conexión al micrófono...', 'dimmed');
+      // Ideally re-trigger mic request here.
+    });
+    this.welcomeStartBtn.addEventListener('click', () => {
+      this.onStart?.();
     });
 
-    const btn = this.#q('#start-btn');
-    btn.addEventListener('click', () => {
-      // Si el botón ya dice que inicie, lanzamos el juego
-      if (btn.textContent === 'COMENZAR SIMULACIÓN') {
-        this.onStart?.();
-        return;
-      }
-      // UX 1/2: Simular el inicio de permisos
-      const step1 = this.#q('#step-1');
-      const step2 = this.#q('#step-2');
-      
-      step1.classList.add('dimmed');
-      step1.classList.remove('active');
-      step2.classList.remove('dimmed');
-      step2.classList.add('active');
-      btn.textContent = 'COMENZAR SIMULACIÓN';
+    this.startBtn.addEventListener('click', () => {
+      this.onCalibrationComplete?.();
     });
   }
 
   #q(sel: string): HTMLElement {
     const el = document.querySelector<HTMLElement>(sel);
-    if (!el) throw new Error(`UIManager: element not found: \${sel}`);
+    if (!el) throw new Error(`UIManager: element not found: ${sel}`);
     return el;
-  }
-
-  showToast(message: string, styleClass: string = '') {
-    const toast = document.createElement('div');
-    toast.className = `micro-toast ${styleClass}`;
-    toast.textContent = message;
-    
-    this.toastContainer.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.classList.add('fade-out');
-      toast.addEventListener('animationend', () => toast.remove());
-    }, 1500);
   }
 
   setLoadingProgress(ratio: number, label?: string): void {
@@ -125,15 +122,21 @@ export class UIManager {
   }
 
   setMicColor(color: ColorName): void {
-    this.micWrap.className = `orb c-${color} listening`;
-    this.showToast(`${color.toUpperCase()} DETECTADO`);
+    const hex = CONFIG.colors[color].hex;
+    this.micWrap.className = `c-${color}`;
+    
+    this.micFills.forEach(el => el.setAttribute('fill', hex));
+    this.micStrokes.forEach(el => el.setAttribute('stroke', hex));
+
     this.currentStreak++;
     if (this.currentStreak > this.maxStreak) this.maxStreak = this.currentStreak;
     this.micFeedbackPanel.style.display = 'none';
   }
 
   setMicIdle(): void {
-    this.micWrap.className = 'orb idle';
+    this.micWrap.className = 'idle';
+    this.micFills.forEach(el => el.setAttribute('fill', '#888'));
+    this.micStrokes.forEach(el => el.setAttribute('stroke', '#888'));
   }
 
   showMicError(message: string): void {
@@ -142,7 +145,9 @@ export class UIManager {
       ? 'Permiso denegado. Revisa la configuración de tu navegador.'
       : 'Error de entrada de voz. ¿Está mudo?';
     this.micFeedbackPanel.style.display = 'flex';
-    this.micWrap.className = 'orb error';
+    this.micWrap.className = 'error';
+    this.micFills.forEach(el => el.setAttribute('fill', '#f55'));
+    this.micStrokes.forEach(el => el.setAttribute('stroke', '#f55'));
     this.currentStreak = 0;
   }
 
@@ -157,14 +162,23 @@ export class UIManager {
     this.victoryEl.classList.add('show');
   }
 
-  showStartScreen(): void {
+  showWelcomeScreen(): void {
     this.startScreenEl.classList.add('show');
-    this.showMic();
+    this.#setSection('welcome');
+  }
+
+  showStartScreen(): void {
+    this.showWelcomeScreen();
+  }
+
+  showCalibrationScreen(): void {
+    this.startScreenEl.classList.add('show');
+    this.#setSection('calibration');
+    this.resetCalibrationUI();
   }
 
   hideStartScreen(): void {
     this.startScreenEl.classList.remove('show');
-    this.targetValue.textContent = 'Sobrevivir';
   }
 
   showTimer(): void {
@@ -191,5 +205,71 @@ export class UIManager {
     this.statStreak.textContent = String(this.maxStreak);
     this.gameOverEl.classList.add('show');
     this.hideMic();
+  }
+
+  setCalibrationActive(color: ColorName): void {
+    this.calibrationItems.forEach((item, key) => {
+      item.classList.toggle('active', key === color);
+    });
+    this.setCalibrationStatus(`Siguiente: ${color.toUpperCase()}`);
+  }
+
+  setCalibrationDetected(color: ColorName): void {
+    const item = this.calibrationItems.get(color);
+    if (item) {
+      item.classList.remove('active');
+      item.classList.add('done');
+    }
+    this.#flashCalibrationVisualizer(color);
+  }
+
+  showCalibrationReady(): void {
+    this.calibrationScreenEl.classList.add('ready');
+    this.calibrationReadyEl.textContent = 'TODO LISTO!';
+    this.setCalibrationStatus('Presiona comenzar juego');
+  }
+
+  showCalibrationTimeout(retriesLeft: number): void {
+    if (retriesLeft > 0) {
+      this.setCalibrationStatus(`Timeout - reintentos: ${retriesLeft}`, true);
+    } else {
+      this.setCalibrationStatus('Sin reintentos. Recarga para intentar.', true);
+    }
+  }
+
+  setCalibrationStatus(message: string, isWarning: boolean = false): void {
+    this.calibrationStatusEl.textContent = message;
+    this.calibrationStatusEl.classList.toggle('warning', isWarning);
+  }
+
+  resetCalibrationUI(): void {
+    this.calibrationScreenEl.classList.remove('ready');
+    this.calibrationItems.forEach((item) => {
+      item.classList.remove('active', 'done');
+    });
+    this.calibrationReadyEl.textContent = '';
+    this.setCalibrationStatus('Escuchando...');
+    this.calibrationVisualizer.className = 'calibration-visualizer';
+  }
+
+  #setSection(section: 'welcome' | 'calibration'): void {
+    if (section === 'welcome') {
+      this.welcomeScreenEl.classList.add('active');
+      this.calibrationScreenEl.classList.remove('active');
+      return;
+    }
+    this.calibrationScreenEl.classList.add('active');
+    this.welcomeScreenEl.classList.remove('active');
+  }
+
+  #flashCalibrationVisualizer(color: ColorName): void {
+    if (this.calibrationFlashTimeout) {
+      clearTimeout(this.calibrationFlashTimeout);
+      this.calibrationFlashTimeout = null;
+    }
+    this.calibrationVisualizer.className = `calibration-visualizer c-${color} flash`;
+    this.calibrationFlashTimeout = window.setTimeout(() => {
+      this.calibrationVisualizer.className = `calibration-visualizer c-${color}`;
+    }, 220);
   }
 }

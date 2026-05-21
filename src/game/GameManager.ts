@@ -7,7 +7,7 @@ import { PelletManager } from '../pellets/PelletManager';
 import { VoiceController } from '../voice/VoiceController';
 import { UIManager } from '../ui/UIManager';
 import { AudioManager } from '../audio/AudioManager';
-import { CONFIG } from '../config';
+import { CONFIG, type ColorName } from '../config';
 
 type GameState = 'LOADING' | 'START' | 'SPAWNING' | 'PLAYING' | 'VICTORY' | 'GAME_OVER';
 
@@ -20,6 +20,11 @@ export class GameManager {
   private pellets!: PelletManager;
   private voice!: VoiceController;
   private audio!: AudioManager;
+  private calibrationVoice: VoiceController | null = null;
+  private calibrationTimer: number | null = null;
+  private calibrationIndex = 0;
+  private calibrationRetriesLeft = 0;
+  private calibrationOrder: ColorName[] = CONFIG.calibration.words;
 
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   private timeLeft = 0;
@@ -63,17 +68,104 @@ export class GameManager {
     });
 
     // 4. Show start screen
-    this.ui.onStart = () => this.#onStartPressed();
+    this.ui.onStart = () => this.#onCalibrationStart();
+    this.ui.onCalibrationComplete = () => this.#onStartPressed();
     this.ui.hideLoading();
     this.#enterStart();
   }
 
   #enterStart(): void {
     this.state = 'START';
-    this.ui.showStartScreen();
+    this.ui.showWelcomeScreen();
+  }
+
+  #onCalibrationStart(): void {
+    this.ui.showCalibrationScreen();
+    this.#startCalibrationFlow();
+  }
+
+  #startCalibrationFlow(): void {
+    this.#cleanupCalibration();
+    this.calibrationOrder = CONFIG.calibration.words;
+    this.calibrationIndex = 0;
+    this.calibrationRetriesLeft = CONFIG.calibration.maxRetries;
+
+    const first = this.calibrationOrder[this.calibrationIndex];
+    this.ui.setCalibrationActive(first);
+
+    this.calibrationVoice = new VoiceController({
+      onColor: (color) => this.#onCalibrationColor(color),
+      onSilence: () => {},
+      onError: (msg) => {
+        console.error(`[Rockey] Calibration error: ${msg}`);
+        this.ui.showMicError(msg);
+        this.#cleanupCalibration();
+      },
+    });
+
+    this.calibrationVoice.start();
+    this.#armCalibrationTimer();
+  }
+
+  #onCalibrationColor(color: ColorName): void {
+    const expected = this.calibrationOrder[this.calibrationIndex];
+    if (color !== expected) {
+      this.ui.setCalibrationStatus(`Di: ${expected.toUpperCase()}`, true);
+      return;
+    }
+
+    this.ui.setCalibrationDetected(color);
+    this.calibrationIndex++;
+
+    if (this.calibrationIndex >= this.calibrationOrder.length) {
+      this.#clearCalibrationTimer();
+      this.calibrationVoice?.stop();
+      this.calibrationVoice = null;
+      this.ui.showCalibrationReady();
+      return;
+    }
+
+    const next = this.calibrationOrder[this.calibrationIndex];
+    this.ui.setCalibrationActive(next);
+    this.#armCalibrationTimer();
+  }
+
+  #armCalibrationTimer(): void {
+    this.#clearCalibrationTimer();
+    this.calibrationTimer = window.setTimeout(() => {
+      this.#onCalibrationTimeout();
+    }, CONFIG.calibration.timeoutMs);
+  }
+
+  #onCalibrationTimeout(): void {
+    if (this.calibrationRetriesLeft > 0) {
+      this.calibrationRetriesLeft -= 1;
+      this.ui.showCalibrationTimeout(this.calibrationRetriesLeft);
+      this.#armCalibrationTimer();
+      return;
+    }
+
+    this.ui.showCalibrationTimeout(0);
+    this.#cleanupCalibration();
+  }
+
+  #clearCalibrationTimer(): void {
+    if (this.calibrationTimer) {
+      clearTimeout(this.calibrationTimer);
+      this.calibrationTimer = null;
+    }
+  }
+
+  #cleanupCalibration(): void {
+    this.#clearCalibrationTimer();
+    if (this.calibrationVoice) {
+      this.calibrationVoice.stop();
+      this.calibrationVoice = null;
+    }
   }
 
   #onStartPressed(): void {
+    this.#cleanupCalibration();
     this.ui.hideStartScreen();
     this.#startSpawning();
   }

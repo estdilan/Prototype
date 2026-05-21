@@ -4,6 +4,7 @@ type VoiceCallback = {
   onColor: (color: ColorName) => void;
   onSilence: () => void;
   onError: (message: string) => void;
+  onTimeout?: () => void;
 };
 
 // Diccionario NLP expandido para robustez
@@ -30,6 +31,8 @@ export class VoiceController {
   private processor: AudioWorkletNode | null = null;
   
   private state: 'IDLE' | 'LISTENING' | 'STOPPED' | 'ERROR' = 'IDLE';
+  private isCalibrationMode = false;
+  private calibrationTimer: number | null = null;
 
   // Cola de colores y estado de procesamiento
   private colorQueue: ColorName[] = [];
@@ -45,9 +48,28 @@ export class VoiceController {
     this.cb = callbacks;
   }
 
+  /**
+   * Inicia en modo calibración con timeout automático
+   */
+  async startCalibration(): Promise<void> {
+    this.isCalibrationMode = true;
+    await this.start();
+  }
+
   async start(): Promise<void> {
     if (this.state === 'LISTENING') return;
     this.state = 'LISTENING';
+
+    // Si estamos en modo calibración, iniciar timer de timeout
+    if (this.isCalibrationMode && this.calibrationTimer === null) {
+      this.calibrationTimer = window.setTimeout(() => {
+        if (this.state === 'LISTENING' && this.isCalibrationMode) {
+          console.log('[Voice] Calibration timeout');
+          this.cb.onTimeout?.();
+          this.stop();
+        }
+      }, CONFIG.calibration.timeoutMs);
+    }
 
     const token = import.meta.env.VITE_DEEPGRAM_TOKEN;
     if (!token) {
@@ -110,6 +132,11 @@ export class VoiceController {
   stop(): void {
     if (this.state === 'STOPPED') return;
     this.state = 'STOPPED';
+
+    if (this.calibrationTimer) {
+      window.clearTimeout(this.calibrationTimer);
+      this.calibrationTimer = null;
+    }
 
     if (this.silenceTimer) {
       window.clearTimeout(this.silenceTimer);
@@ -226,6 +253,13 @@ export class VoiceController {
         
         const now = Date.now();
         console.log(`[Voice] 🎤 Deepgram: ${color.toUpperCase()} (T: ${now - this.lastColorTime}ms)`);
+        
+        // En modo calibración, limpiar timer al primer color detectado
+        if (this.isCalibrationMode && this.calibrationTimer) {
+          window.clearTimeout(this.calibrationTimer);
+          this.calibrationTimer = null;
+        }
+        
         this.cb.onColor(color);
         this.lastColorTime = now;
     }
