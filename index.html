@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rockey</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
 </head>
@@ -23,55 +21,54 @@
 
 <!-- Start screen -->
 <div id="start-screen" class="panel">
-  <div class="start-shell">
-    <section id="welcome-screen" class="screen-section active">
-      <div class="title-block">
-        <h1 id="start-title" class="title-hero" aria-label="ROCKEY">
-          <span class="title-letter">R</span>
-          <span class="title-letter">O</span>
-          <span class="title-letter">C</span>
-          <span class="title-letter">K</span>
-          <span class="title-letter">E</span>
-          <span class="title-letter">Y</span>
-        </h1>
+  <!-- Las secciones se alinean directamente en el centro del panel -->
+  <section id="welcome-screen" class="screen-section active">
+    <div class="title-block">
+      <h1 id="start-title" class="title-hero" aria-label="ROCKEY">
+        <span class="title-letter">R</span>
+        <span class="title-letter">O</span>
+        <span class="title-letter">C</span>
+        <span class="title-letter">K</span>
+        <span class="title-letter">E</span>
+        <span class="title-letter">Y</span>
+      </h1>
+    </div>
+    <button id="welcome-start-btn" class="btn-primary btn-start">START</button>
+  </section>
+
+  <section id="calibration-screen" class="screen-section">
+    <div class="calibration-panel">
+      <p class="ui-text dimmed" id="calibration-eyebrow">Configurando tus comandos de voz...</p>
+      <h2 class="display-text" id="calibration-title">Di las palabras en voz alta:</h2>
+
+      <ul id="calibration-list" class="calibration-list">
+        <li class="calibration-item" data-color="rojo">
+          <span class="marker"></span>
+          <span class="word">ROJO</span>
+        </li>
+        <li class="calibration-item" data-color="azul">
+          <span class="marker"></span>
+          <span class="word">AZUL</span>
+        </li>
+        <li class="calibration-item" data-color="verde">
+          <span class="marker"></span>
+          <span class="word">VERDE</span>
+        </li>
+        <li class="calibration-item" data-color="amarillo">
+          <span class="marker"></span>
+          <span class="word">AMARILLO</span>
+        </li>
+      </ul>
+
+      <div id="calibration-visualizer" class="calibration-visualizer">
+        <span></span><span></span><span></span><span></span><span></span>
       </div>
-      <button id="welcome-start-btn" class="btn-primary btn-start">START</button>
-    </section>
 
-    <section id="calibration-screen" class="screen-section">
-      <div class="calibration-panel">
-        <p class="ui-text dimmed" id="calibration-eyebrow">Configurando tus comandos de voz...</p>
-        <h2 class="display-text" id="calibration-title">Di las palabras en voz alta:</h2>
-
-        <ul id="calibration-list" class="calibration-list">
-          <li class="calibration-item" data-color="rojo">
-            <span class="marker"></span>
-            <span class="word">ROJO</span>
-          </li>
-          <li class="calibration-item" data-color="azul">
-            <span class="marker"></span>
-            <span class="word">AZUL</span>
-          </li>
-          <li class="calibration-item" data-color="verde">
-            <span class="marker"></span>
-            <span class="word">VERDE</span>
-          </li>
-          <li class="calibration-item" data-color="amarillo">
-            <span class="marker"></span>
-            <span class="word">AMARILLO</span>
-          </li>
-        </ul>
-
-        <div id="calibration-visualizer" class="calibration-visualizer">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-
-        <div id="calibration-status" class="ui-text">Escuchando...</div>
-        <div id="calibration-ready">TODO LISTO!</div>
-        <button id="start-btn" class="btn-primary btn-start blink">COMENZAR JUEGO</button>
-      </div>
-    </section>
-  </div>
+      <div id="calibration-status" class="ui-text">Escuchando...</div>
+      <div id="calibration-ready">TODO LISTO!</div>
+      <button id="start-btn" class="btn-primary btn-start blink">COMENZAR JUEGO</button>
+    </div>
+  </section>
 </div>
 
 <!-- HUD Elements -->
@@ -81,7 +78,7 @@
       <div class="hud-label">PELLETS</div>
       <div class="hud-value">
         <span class="hud-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="img" focusable="false">
+          <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="6" fill="currentColor" />
           </svg>
         </span>
@@ -95,7 +92,7 @@
       <div class="hud-label">TIEMPO</div>
       <div class="hud-value">
         <span class="hud-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="img" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="8" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="12" x2="15" y2="14" />
