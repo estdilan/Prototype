@@ -38,35 +38,44 @@
 
   <section id="calibration-screen" class="screen-section">
     <div class="calibration-panel">
-      <p class="ui-text dimmed" id="calibration-eyebrow">Configurando tus comandos de voz...</p>
-      <h2 class="display-text" id="calibration-title">Di las palabras en voz alta:</h2>
+      <header class="calibration-header">
+        <h2 class="display-text" id="calibration-title">Calibra tu voz para jugar</h2>
+        <p class="ui-text dimmed" id="calibration-eyebrow">Di las palabras cuando se iluminen.</p>
+        <div id="calibration-status" class="ui-text">Escuchando...</div>
+      </header>
 
-      <ul id="calibration-list" class="calibration-list">
-        <li class="calibration-item" data-color="rojo">
-          <span class="marker"></span>
-          <span class="word">ROJO</span>
-        </li>
-        <li class="calibration-item" data-color="azul">
-          <span class="marker"></span>
-          <span class="word">AZUL</span>
-        </li>
-        <li class="calibration-item" data-color="verde">
-          <span class="marker"></span>
-          <span class="word">VERDE</span>
-        </li>
-        <li class="calibration-item" data-color="amarillo">
-          <span class="marker"></span>
-          <span class="word">AMARILLO</span>
-        </li>
-      </ul>
+      <div class="calibration-body">
+          <div id="calibration-visualizer" class="calibration-visualizer">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
 
-      <div id="calibration-visualizer" class="calibration-visualizer">
-        <span></span><span></span><span></span><span></span><span></span>
+        <ul id="calibration-list" class="calibration-list">
+          <li class="calibration-item" data-color="rojo">
+            <span class="step-index">01</span>
+            <span class="marker"></span>
+            <span class="word">ROJO</span>
+          </li>
+          <li class="calibration-item" data-color="azul">
+            <span class="step-index">02</span>
+            <span class="marker"></span>
+            <span class="word">AZUL</span>
+          </li>
+          <li class="calibration-item" data-color="verde">
+            <span class="step-index">03</span>
+            <span class="marker"></span>
+            <span class="word">VERDE</span>
+          </li>
+          <li class="calibration-item" data-color="amarillo">
+            <span class="step-index">04</span>
+            <span class="marker"></span>
+            <span class="word">AMARILLO</span>
+          </li>
+        </ul>
       </div>
 
-      <div id="calibration-status" class="ui-text">Escuchando...</div>
-      <div id="calibration-ready">TODO LISTO!</div>
-      <button id="start-btn" class="btn-primary btn-start blink">COMENZAR JUEGO</button>
+      <div class="calibration-footer">
+        <button id="start-btn" class="btn-primary btn-start">COMENZAR JUEGO</button>
+      </div>
     </div>
   </section>
 </div>

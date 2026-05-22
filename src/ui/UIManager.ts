@@ -22,7 +22,6 @@ export class UIManager {
   private welcomeScreenEl: HTMLElement;
   private calibrationScreenEl: HTMLElement;
   private calibrationStatusEl: HTMLElement;
-  private calibrationReadyEl: HTMLElement;
   private calibrationVisualizer: HTMLElement;
   private startBtn: HTMLElement;
   private welcomeStartBtn: HTMLElement;
@@ -59,7 +58,6 @@ export class UIManager {
     this.welcomeScreenEl = this.#q('#welcome-screen');
     this.calibrationScreenEl = this.#q('#calibration-screen');
     this.calibrationStatusEl = this.#q('#calibration-status');
-    this.calibrationReadyEl = this.#q('#calibration-ready');
     this.calibrationVisualizer = this.#q('#calibration-visualizer');
     this.startBtn = this.#q('#start-btn');
     this.welcomeStartBtn = this.#q('#welcome-start-btn');
@@ -211,6 +209,7 @@ export class UIManager {
     this.calibrationItems.forEach((item, key) => {
       item.classList.toggle('active', key === color);
     });
+    this.calibrationVisualizer.className = `calibration-visualizer c-${color}`;
     this.setCalibrationStatus(`Siguiente: ${color.toUpperCase()}`);
   }
 
@@ -220,12 +219,11 @@ export class UIManager {
       item.classList.remove('active');
       item.classList.add('done');
     }
-    this.#flashCalibrationVisualizer(color);
+    this.#flashCalibrationVisualizer();
   }
 
   showCalibrationReady(): void {
     this.calibrationScreenEl.classList.add('ready');
-    this.calibrationReadyEl.textContent = 'TODO LISTO!';
     this.setCalibrationStatus('Presiona comenzar juego');
   }
 
@@ -247,29 +245,44 @@ export class UIManager {
     this.calibrationItems.forEach((item) => {
       item.classList.remove('active', 'done');
     });
-    this.calibrationReadyEl.textContent = '';
     this.setCalibrationStatus('Escuchando...');
     this.calibrationVisualizer.className = 'calibration-visualizer';
   }
 
   #setSection(section: 'welcome' | 'calibration'): void {
-    if (section === 'welcome') {
-      this.welcomeScreenEl.classList.add('active');
-      this.calibrationScreenEl.classList.remove('active');
+    const incoming = section === 'welcome' ? this.welcomeScreenEl     : this.calibrationScreenEl;
+    const outgoing = section === 'welcome' ? this.calibrationScreenEl : this.welcomeScreenEl;
+
+    if (!outgoing.classList.contains('active')) {
+      // Nada saliendo — entra directo
+      incoming.classList.add('active');
       return;
     }
-    this.calibrationScreenEl.classList.add('active');
-    this.welcomeScreenEl.classList.remove('active');
+
+    this.#transitionSections(outgoing, incoming);
   }
 
-  #flashCalibrationVisualizer(color: ColorName): void {
+  #transitionSections(from: HTMLElement, to: HTMLElement): void {
+    const LEAVE_MS = 380; // debe coincidir con la duración de .leaving en el CSS
+
+    from.classList.add('leaving');
+    from.classList.remove('active');
+
+    // Limpia .leaving cuando termina su animación de salida
+    setTimeout(() => from.classList.remove('leaving'), LEAVE_MS);
+
+    // La entrante espera un poco para que no se solapen
+    setTimeout(() => to.classList.add('active'), 80);
+  }
+
+  #flashCalibrationVisualizer(): void {
     if (this.calibrationFlashTimeout) {
       clearTimeout(this.calibrationFlashTimeout);
       this.calibrationFlashTimeout = null;
     }
-    this.calibrationVisualizer.className = `calibration-visualizer c-${color} flash`;
+    this.calibrationVisualizer.classList.add('flash');
     this.calibrationFlashTimeout = window.setTimeout(() => {
-      this.calibrationVisualizer.className = `calibration-visualizer c-${color}`;
+      this.calibrationVisualizer.classList.remove('flash');
     }, 220);
   }
 }
