@@ -62,17 +62,31 @@ export const CONFIG = {
   },
   jumbotron: {
     x: 0,
-    y: 5.5,   // justo encima de la plataforma (platform.y + platform.height ≈ 4.9)
+    y: 15,    // suspendido sobre la plataforma; subir para más alto, bajar para más cerca
     z: 0,
-    scale: 1.0,
+    scale: 0.008,  // el modelo nativo mide ~1200 unidades, scale chico para que quepa
+  },
+  stadium: {
+    y: 3,     // altura del estadio; subir para elevarlo respecto a la plataforma
+    scale: 55.0,
+  },
+  lighting: {
+    ambientIntensity: 0.08,   // luz ambiente general; subir para iluminar todo, bajar para más contraste
+    spotHeight: 28,           // altura desde la que bajan los 4 focos esquineros
+    spotRadius: 18,           // distancia horizontal de cada foco al centro
+    spotAngle: Math.PI / 3.5, // apertura del cono (mayor = haz más ancho)
+    spotExponent: 2,          // suavidad del borde del cono
+    spotIntensity: 800,       // brillo de cada foco esquinero
+    centerAngle: Math.PI / 4, // apertura del foco cenital
+    centerIntensity: 400,     // brillo del foco cenital sobre la plataforma
   },
   camera: {
     alpha: -Math.PI / 4,
     beta: Math.acos(5 / 9),
-    y: 6.2,
+    y: 3,
     radius: 42,
     fovDeg: 28,
-    minRadius: 8,
+    minRadius: 35,   // evita zoom-in extremo (impide llegar a la vista cerrada tipo img2)
     maxRadius: 70,
   },
   colors: {

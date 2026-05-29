@@ -76,6 +76,8 @@ export class VoskEngine implements VoiceEngine {
 
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const track = this.mediaStream.getAudioTracks()[0];
+      console.log('[Voice/Vosk] Micrófono en uso:', track?.label || '(sin nombre)');
     } catch {
       this.cb.onError('Micrófono no permitido o no encontrado.');
       this.state = 'ERROR';

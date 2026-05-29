@@ -16,7 +16,8 @@ export async function loadEnvironment(scene: Scene, ui: UIManager): Promise<void
       ui.setLoadingProgress(pct, 'Cargando estadio...');
     }
   });
-  stadiumResult.meshes[0].scaling.setAll(0.5);
+  stadiumResult.meshes[0].scaling.setAll(CONFIG.stadium.scale);
+  stadiumResult.meshes[0].position.y = CONFIG.stadium.y;
   stadiumResult.meshes.forEach(m => { m.checkCollisions = true; });
 
   // --- Jumbotron ---
