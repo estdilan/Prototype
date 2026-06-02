@@ -31,7 +31,4 @@ export async function loadEnvironment(scene: Scene, ui: UIManager): Promise<void
   const jRoot = jumbotronResult.meshes[0];
   jRoot.position = new Vector3(CONFIG.jumbotron.x, CONFIG.jumbotron.y, CONFIG.jumbotron.z);
   jRoot.scaling.setAll(CONFIG.jumbotron.scale);
-  const jBounds = jRoot.getHierarchyBoundingVectors(true);
-  console.log(`[Jumbotron] bounds size: ${(jBounds.max.x - jBounds.min.x).toFixed(2)} × ${(jBounds.max.y - jBounds.min.y).toFixed(2)} × ${(jBounds.max.z - jBounds.min.z).toFixed(2)}`);
-  console.log(`[Jumbotron] position: ${jRoot.position}`);
 }

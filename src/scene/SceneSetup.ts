@@ -73,5 +73,22 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   center.intensity = CONFIG.lighting.centerIntensity;
   center.diffuse   = new Color3(1, 1, 1);
 
+  // --- Log de valores de cámara en tiempo real (para ajustar defaults de CONFIG.camera) ---
+  let camLogTimer: number | null = null;
+  cam.onViewMatrixChangedObservable.add(() => {
+    if (camLogTimer !== null) return;
+    camLogTimer = window.setTimeout(() => {
+      camLogTimer = null;
+      const a = cam.alpha, b = cam.beta, r = cam.radius, ty = cam.target.y;
+      const RAD2DEG = 180 / Math.PI;
+      console.log(
+        `[Camera] alpha=${a.toFixed(3)} (${(a * RAD2DEG).toFixed(1)}°)  ` +
+        `beta=${b.toFixed(3)} (${(b * RAD2DEG).toFixed(1)}°)  ` +
+        `radius=${r.toFixed(2)}  target.y=${ty.toFixed(2)}  ` +
+        `→ config: { alpha: ${a.toFixed(3)}, beta: ${b.toFixed(3)}, radius: ${r.toFixed(2)}, y: ${ty.toFixed(2)} }`,
+      );
+    }, 200);
+  });
+
   return { engine, scene, camera: cam };
 }

@@ -81,13 +81,13 @@ export const CONFIG = {
     centerIntensity: 400,     // brillo del foco cenital sobre la plataforma
   },
   camera: {
-    alpha: -Math.PI / 4,
-    beta: Math.acos(5 / 9),
-    y: 3,
-    radius: 42,
+    alpha: -0.499,       // ~-28.6°, encuadre elegido en runtime
+    beta: 1.054,         // ~60.4°
+    y: 2.00,
+    radius: 60.00,
     fovDeg: 28,
-    minRadius: 35,   // evita zoom-in extremo (impide llegar a la vista cerrada tipo img2)
-    maxRadius: 70,
+    minRadius: 50,       // evita zoom-in extremo (impide llegar a la vista cerrada tipo img2)
+    maxRadius: 80,
   },
   colors: {
     rojo:     { hex: '#e74c3c', r: 0.91, g: 0.30, b: 0.24 },
