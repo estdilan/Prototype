@@ -4,45 +4,144 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rockey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
 
+<div id="arcade-background"></div>
 <canvas id="renderCanvas" tabindex="0"></canvas>
 <div id="error-box"></div>
 
 <!-- Loading overlay -->
-<div id="loading">
-  <div id="loading-text">Iniciando...</div>
+<div id="loading" class="panel">
+  <div id="loading-text" class="ui-text">INICIANDO...</div>
   <div id="loading-bar"><div id="loading-fill"></div></div>
 </div>
 
 <!-- Start screen -->
-<div id="start-screen">
-  <p id="start-title">ROCKEY</p>
-  <p id="start-subtitle">Controla la plataforma con tu voz</p>
-  <button id="start-btn">Iniciar</button>
+<div id="start-screen" class="panel">
+  <!-- Las secciones se alinean directamente en el centro del panel -->
+  <section id="welcome-screen" class="screen-section active">
+    <div class="title-block">
+      <h1 id="start-title" class="title-hero" aria-label="ROCKEY">
+        <span class="title-letter">R</span>
+        <span class="title-letter">O</span>
+        <span class="title-letter">C</span>
+        <span class="title-letter">K</span>
+        <span class="title-letter">E</span>
+        <span class="title-letter">Y</span>
+      </h1>
+    </div>
+    <button id="welcome-start-btn" class="btn-primary btn-start">START</button>
+  </section>
+
+  <section id="calibration-screen" class="screen-section">
+    <div class="calibration-panel">
+      <header class="calibration-header">
+        <h2 class="display-text" id="calibration-title">Calibra tu voz para jugar</h2>
+        <p class="ui-text dimmed" id="calibration-eyebrow">Di las palabras cuando se iluminen.</p>
+        <div id="calibration-status" class="ui-text">Escuchando...</div>
+      </header>
+
+      <div class="calibration-body">
+          <div id="calibration-visualizer" class="calibration-visualizer">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+        <ul id="calibration-list" class="calibration-list">
+          <li class="calibration-item" data-color="rojo">
+            <span class="step-index">01</span>
+            <span class="marker"></span>
+            <span class="word">ROJO</span>
+          </li>
+          <li class="calibration-item" data-color="azul">
+            <span class="step-index">02</span>
+            <span class="marker"></span>
+            <span class="word">AZUL</span>
+          </li>
+          <li class="calibration-item" data-color="verde">
+            <span class="step-index">03</span>
+            <span class="marker"></span>
+            <span class="word">VERDE</span>
+          </li>
+          <li class="calibration-item" data-color="amarillo">
+            <span class="step-index">04</span>
+            <span class="marker"></span>
+            <span class="word">AMARILLO</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="calibration-footer">
+        <button id="start-btn" class="btn-primary btn-start">COMENZAR JUEGO</button>
+      </div>
+    </div>
+  </section>
 </div>
 
-<!-- HUD -->
-<div id="score">0</div>
-<div id="timer">2:00</div>
+<!-- HUD Elements -->
+<div id="hud-container">
+  <div id="hud-top-left">
+    <div id="score-card" class="hud-panel">
+      <div class="hud-label">PELLETS</div>
+      <div class="hud-value">
+        <span class="hud-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="6" fill="currentColor" />
+          </svg>
+        </span>
+        <div id="score">000</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud-top-right">
+    <div id="timer-card" class="hud-panel">
+      <div class="hud-label">TIEMPO</div>
+      <div class="hud-value">
+        <span class="hud-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="12" x2="15" y2="14" />
+          </svg>
+        </span>
+        <div id="timer">00:00</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Barra de progreso de spawn -->
 <div id="spawn-progress"><div id="spawn-progress-fill"></div></div>
-<div id="mic-error"></div>
+
+<!-- Microphone Error / Advice -->
+<div id="mic-feedback-panel" class="hud-panel error-state" style="display: none;">
+  <span id="mic-error"></span>
+  <button id="mic-fix-btn" class="btn-secondary btn-small">Intentar Reconectar</button>
+</div>
 
 <!-- Victory -->
-<div id="victory">
-  <p id="victory-label">Juego terminado</p>
-  <div id="victory-score">0</div>
-  <button id="victory-restart">Volver a empezar</button>
+<div id="victory" class="panel">
+  <p id="victory-label" class="ui-text highlight">NIVEL COMPLETADO</p>
+  <div id="victory-score" class="display-text">0</div>
+  <button id="victory-restart" class="btn-primary">VOLVER A EMPEZAR</button>
 </div>
 
 <!-- Game Over -->
-<div id="game-over">
-  <p id="game-over-label">Tiempo agotado</p>
-  <div id="game-over-score">0</div>
-  <p id="game-over-sub">pellets completados</p>
-  <button id="game-over-restart">Intentar de nuevo</button>
+<div id="game-over" class="panel">
+  <p id="game-over-label" class="ui-text warning">TIEMPO AGOTADO</p>
+  <div id="game-over-score" class="display-text">0</div>
+  <p id="game-over-sub" class="ui-text dimmed">PELLETS COMPLETADOS</p>
+  
+  <div class="stats-row" id="game-over-stats">
+    <div class="stat"><span class="stat-label">Racha Máxima</span><span id="stat-streak" class="stat-val">0</span></div>
+  </div>
+
+  <div class="button-group">
+    <button id="game-over-restart" class="btn-primary">INTENTAR DE NUEVO</button>
+  </div>
 </div>
 
 <!-- Microphone indicator -->

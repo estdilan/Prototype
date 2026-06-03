@@ -4,6 +4,7 @@ export type VoiceCallbacks = {
   onColor: (color: ColorName) => void;
   onSilence: () => void;
   onError: (message: string) => void;
+  onTimeout?: () => void;
 };
 
 export interface VoiceEngine {
