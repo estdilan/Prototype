@@ -1,6 +1,6 @@
 import {
   Engine, Scene, Color3, Color4, Vector3,
-  ArcRotateCamera, HemisphericLight, DirectionalLight,
+  ArcRotateCamera, HemisphericLight, SpotLight,
 } from '@babylonjs/core';
 import { CannonJSPlugin } from '@babylonjs/core/Physics/v1/Plugins/cannonJSPlugin';
 import '@babylonjs/core/Physics/joinedPhysicsEngineComponent';
@@ -35,14 +35,60 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   cam.attachControl(canvas, true);
   cam.lowerRadiusLimit = CONFIG.camera.minRadius;
   cam.upperRadiusLimit = CONFIG.camera.maxRadius;
+  cam.panningSensibility = 0;  // bloquea Alt+drag para que no mueva el target
   cam.checkCollisions  = true;
 
+  // --- Iluminación ambiente: muy tenue para crear atmósfera oscura ---
   const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene);
-  hemi.intensity   = 0.5;
-  hemi.groundColor = new Color3(0.08, 0.08, 0.12);
+  hemi.intensity   = CONFIG.lighting.ambientIntensity;
+  hemi.groundColor = new Color3(0.02, 0.02, 0.04);
+  hemi.diffuse     = new Color3(0.15, 0.15, 0.25);  // tinte azulado nocturno
 
-  const sun = new DirectionalLight('sun', new Vector3(-0.5, -1, 0.5).normalize(), scene);
-  sun.intensity = 1.1;
+  // --- Spotlights desde el techo del estadio hacia la plataforma ---
+  // 4 focos en las esquinas + 1 cenital sobre el centro
+  const target = new Vector3(0, CONFIG.platform.y, 0);
+  const spotPositions: Array<[number, number, number, Color3]> = [
+    [ CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight,  CONFIG.lighting.spotRadius, new Color3(1.0, 0.95, 0.85)], // cálido frontal-derecho
+    [-CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight,  CONFIG.lighting.spotRadius, new Color3(0.85, 0.95, 1.0)], // frío frontal-izquierdo
+    [ CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight, -CONFIG.lighting.spotRadius, new Color3(0.85, 0.95, 1.0)], // frío trasero-derecho
+    [-CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight, -CONFIG.lighting.spotRadius, new Color3(1.0, 0.95, 0.85)], // cálido trasero-izquierdo
+  ];
+  spotPositions.forEach(([x, y, z, color], i) => {
+    const pos = new Vector3(x, y, z);
+    const dir = target.subtract(pos).normalize();
+    const spot = new SpotLight(`spot${i}`, pos, dir, CONFIG.lighting.spotAngle, CONFIG.lighting.spotExponent, scene);
+    spot.intensity = CONFIG.lighting.spotIntensity;
+    spot.diffuse   = color;
+  });
+
+  // Spot cenital central sobre la plataforma (foco principal)
+  const center = new SpotLight(
+    'spotCenter',
+    new Vector3(0, CONFIG.lighting.spotHeight, 0),
+    new Vector3(0, -1, 0),
+    CONFIG.lighting.centerAngle,
+    CONFIG.lighting.spotExponent,
+    scene,
+  );
+  center.intensity = CONFIG.lighting.centerIntensity;
+  center.diffuse   = new Color3(1, 1, 1);
+
+  // --- Log de valores de cámara en tiempo real (para ajustar defaults de CONFIG.camera) ---
+  let camLogTimer: number | null = null;
+  cam.onViewMatrixChangedObservable.add(() => {
+    if (camLogTimer !== null) return;
+    camLogTimer = window.setTimeout(() => {
+      camLogTimer = null;
+      const a = cam.alpha, b = cam.beta, r = cam.radius, ty = cam.target.y;
+      const RAD2DEG = 180 / Math.PI;
+      console.log(
+        `[Camera] alpha=${a.toFixed(3)} (${(a * RAD2DEG).toFixed(1)}°)  ` +
+        `beta=${b.toFixed(3)} (${(b * RAD2DEG).toFixed(1)}°)  ` +
+        `radius=${r.toFixed(2)}  target.y=${ty.toFixed(2)}  ` +
+        `→ config: { alpha: ${a.toFixed(3)}, beta: ${b.toFixed(3)}, radius: ${r.toFixed(2)}, y: ${ty.toFixed(2)} }`,
+      );
+    }, 200);
+  });
 
   return { engine, scene, camera: cam };
 }

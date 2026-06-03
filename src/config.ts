@@ -57,21 +57,37 @@ export const CONFIG = {
     silenceMs: 1600,
     colorLockMs: 400,
     lang: 'es-ES',
+    engine: (import.meta.env.VITE_VOICE_ENGINE ?? 'deepgram') as 'deepgram' | 'vosk',
+    voskModelUrl: (import.meta.env.VITE_VOSK_MODEL_URL ?? '/models/vosk-model-small-es-0.42.tar.gz') as string,
   },
   jumbotron: {
     x: 0,
-    y: 5.5,   // justo encima de la plataforma (platform.y + platform.height ≈ 4.9)
+    y: 15,    // suspendido sobre la plataforma; subir para más alto, bajar para más cerca
     z: 0,
-    scale: 1.0,
+    scale: 0.008,  // el modelo nativo mide ~1200 unidades, scale chico para que quepa
+  },
+  stadium: {
+    y: 3,     // altura del estadio; subir para elevarlo respecto a la plataforma
+    scale: 55.0,
+  },
+  lighting: {
+    ambientIntensity: 0.08,   // luz ambiente general; subir para iluminar todo, bajar para más contraste
+    spotHeight: 28,           // altura desde la que bajan los 4 focos esquineros
+    spotRadius: 18,           // distancia horizontal de cada foco al centro
+    spotAngle: Math.PI / 3.5, // apertura del cono (mayor = haz más ancho)
+    spotExponent: 2,          // suavidad del borde del cono
+    spotIntensity: 800,       // brillo de cada foco esquinero
+    centerAngle: Math.PI / 4, // apertura del foco cenital
+    centerIntensity: 400,     // brillo del foco cenital sobre la plataforma
   },
   camera: {
-    alpha: -Math.PI / 4,
-    beta: Math.acos(5 / 9),
-    y: 6.2,
-    radius: 42,
+    alpha: -0.499,       // ~-28.6°, encuadre elegido en runtime
+    beta: 1.054,         // ~60.4°
+    y: 2.00,
+    radius: 60.00,
     fovDeg: 28,
-    minRadius: 8,
-    maxRadius: 70,
+    minRadius: 50,       // evita zoom-in extremo (impide llegar a la vista cerrada tipo img2)
+    maxRadius: 80,
   },
   colors: {
     rojo:     { hex: '#e74c3c', r: 0.91, g: 0.30, b: 0.24 },
