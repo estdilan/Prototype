@@ -17,7 +17,6 @@ export class PlatformController {
   private nextAngle = 0;
   private nextHold = 0;
   private nextPending = false;
-  private repeatCount = 0;
   private pendingSilence = false;
 
   onTiltStart?: (color: ColorName) => void;
@@ -34,29 +33,22 @@ export class PlatformController {
     const { baseDeg, incrementDeg, maxDeg, baseHoldSec, holdIncrementSec } = CONFIG.tilt;
 
     if (color === this.activeColor && this.holdRunning) {
-      this.repeatCount++;
-      this.activeAngle = Math.min(baseDeg + incrementDeg * this.repeatCount, maxDeg);
-      this.holdTimer  += holdIncrementSec;
-      this.#applyTilt(color, this.activeAngle);
+      this.holdTimer = baseHoldSec;  // refrescar duración, ángulo fijo
       return;
     }
 
     if (color === this.nextColor && this.nextPending) {
-      this.repeatCount++;
-      this.nextAngle = Math.min(baseDeg + incrementDeg * this.repeatCount, maxDeg);
-      this.nextHold  = baseHoldSec + holdIncrementSec * this.repeatCount;
+      this.nextHold = baseHoldSec;
       return;
     }
 
     if (!this.holdRunning) {
-      this.repeatCount = 0;
       this.activeColor = color;
       this.activeAngle = baseDeg;
       this.holdTimer   = baseHoldSec;
       this.holdRunning = true;
       this.#applyTilt(color, this.activeAngle);
     } else {
-      this.repeatCount = 0;
       this.nextColor   = color;
       this.nextAngle   = baseDeg;
       this.nextHold    = baseHoldSec;
@@ -107,7 +99,6 @@ export class PlatformController {
       this.activeAngle   = this.nextAngle;
       this.holdTimer     = this.nextHold;
       this.holdRunning   = true;
-      this.repeatCount   = 0;
       this.#applyTilt(this.activeColor, this.activeAngle);
     } else {
       this.#reset(CONFIG.tilt.returnSpeed);
@@ -129,6 +120,5 @@ export class PlatformController {
     this.holdRunning = false;
     this.activeColor = null;
     this.nextPending = false;
-    this.repeatCount = 0;
   }
 }

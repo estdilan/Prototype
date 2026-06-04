@@ -15,11 +15,12 @@ export interface PlatformResult {
 }
 
 // ---- Tunable layout constants (in platform local units) ----
-const PLATFORM_HALF    = 8.0;   // half side of the GLB (16×16 platform)
-const CENTER_HALF      = 6.4;   // half side of the central piece
-const EDGE_BAR_WIDTH   = 1.0;   // outer border bar width
-const CORNER_INSET     = 1.0;   // amount the rounded corner is pulled in
-const SLIT_HALF_LENGTH = 3.6;  // half-length of the actual slit gap (perpendicular to slit's radial axis)
+const PLATFORM_SCALE   = 1.5;   // global scale factor (1.0 = original size)
+const PLATFORM_HALF    = 8.0  * PLATFORM_SCALE;  // half side of the GLB
+const CENTER_HALF      = 6.4  * PLATFORM_SCALE;  // half side of the central piece
+const EDGE_BAR_WIDTH   = 1.0  * PLATFORM_SCALE;  // outer border bar width
+const CORNER_INSET     = 1.0  * PLATFORM_SCALE;  // amount the rounded corner is pulled in
+const SLIT_HALF_LENGTH = 3.6  * PLATFORM_SCALE;  // half-length of the actual slit gap
 
 // Derived helpers
 const EDGE_CENTER    = PLATFORM_HALF - EDGE_BAR_WIDTH / 2;        // 7.5
@@ -125,6 +126,7 @@ export async function loadPlatform(scene: Scene, ui: UIManager): Promise<Platfor
 
   const visualRoot = result.meshes[0];
   visualRoot.position.setAll(0);
+  visualRoot.scaling.setAll(PLATFORM_SCALE);
   visualRoot.rotationQuaternion = Quaternion.Identity();
   visualRoot.computeWorldMatrix(true);
   visualRoot.getChildMeshes().forEach(m => m.computeWorldMatrix(true));

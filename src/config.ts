@@ -7,7 +7,7 @@ export const CONFIG = {
     total: 100,
     spawnIntervalMs: 8,
     scale: 0.4,
-    spawnXZ: 3.2,
+    spawnXZ: 4.8,
     spawnYMin: 6.0,
     spawnYMax: 18,
     exitY: 2.0,
@@ -38,10 +38,10 @@ export const CONFIG = {
   // These define where pellets pass through to score.
   // Tune these values to match the actual gaps in platform.glb.
   slits: [
-    { xMin:  6.4, xMax:  7.0,  zMin: -3.6, zMax:  3.6 },  // +X gap
-    { xMin: -7.0, xMax: -6.4,  zMin: -3.6, zMax:  3.6 },  // -X gap
-    { xMin: -3.6, xMax:  3.6,  zMin:  6.4, zMax:  7.0 },  // +Z gap
-    { xMin: -3.6, xMax:  3.6,  zMin: -7.0, zMax: -6.4 },  // -Z gap
+    { xMin:  9.6, xMax: 10.5,  zMin: -5.4, zMax:  5.4 },  // +X gap
+    { xMin: -10.5, xMax: -9.6,  zMin: -5.4, zMax:  5.4 }, // -X gap
+    { xMin: -5.4, xMax:  5.4,  zMin:  9.6, zMax: 10.5 },  // +Z gap
+    { xMin: -5.4, xMax:  5.4,  zMin: -10.5, zMax: -9.6 }, // -Z gap
   ],
   tilt: {
     baseDeg: 8,
@@ -62,7 +62,7 @@ export const CONFIG = {
   },
   jumbotron: {
     x: 0,
-    y: 15,    // suspendido sobre la plataforma; subir para más alto, bajar para más cerca
+    y: 20,    // suspendido sobre la plataforma; subir para más alto, bajar para más cerca
     z: 0,
     scale: 0.008,  // el modelo nativo mide ~1200 unidades, scale chico para que quepa
   },
@@ -79,14 +79,16 @@ export const CONFIG = {
     spotIntensity: 800,       // brillo de cada foco esquinero
     centerAngle: Math.PI / 4, // apertura del foco cenital
     centerIntensity: 400,     // brillo del foco cenital sobre la plataforma
+    underlightIntensity: 600, // luz blanca inferior de la plataforma
+    underlightY: 2.0,         // altura del punto de luz inferior (debe quedar bajo la plataforma)
   },
   camera: {
     alpha: -0.499,       // ~-28.6°, encuadre elegido en runtime
     beta: 1.054,         // ~60.4°
     y: 2.00,
-    radius: 60.00,
+    radius: 55.00,
     fovDeg: 28,
-    minRadius: 50,       // evita zoom-in extremo (impide llegar a la vista cerrada tipo img2)
+    minRadius: 35,       // evita zoom-in extremo
     maxRadius: 80,
   },
   colors: {
@@ -96,10 +98,10 @@ export const CONFIG = {
     amarillo: { hex: '#f1c40f', r: 0.95, g: 0.77, b: 0.06 },
   },
   colorToTilt: {
-    rojo:     { x:  1, z: -1 },
-    azul:     { x:  1, z:  1 },
-    verde:    { x: -1, z:  1 },
-    amarillo: { x: -1, z: -1 },
+    rojo:     { x: -1, z: -1 },
+    azul:     { x: -1, z:  1 },
+    verde:    { x:  1, z:  1 },
+    amarillo: { x:  1, z: -1 },
   } as Record<ColorName, { x: number; z: number }>,
   game: {
     timerSeconds: 60,

@@ -1,6 +1,6 @@
 import {
   Engine, Scene, Color3, Color4, Vector3,
-  ArcRotateCamera, HemisphericLight, SpotLight,
+  ArcRotateCamera, HemisphericLight, SpotLight, PointLight,
 } from '@babylonjs/core';
 import { CannonJSPlugin } from '@babylonjs/core/Physics/v1/Plugins/cannonJSPlugin';
 import '@babylonjs/core/Physics/joinedPhysicsEngineComponent';
@@ -72,6 +72,16 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   );
   center.intensity = CONFIG.lighting.centerIntensity;
   center.diffuse   = new Color3(1, 1, 1);
+
+  // --- Luz blanca inferior de la plataforma ---
+  const underlight = new PointLight(
+    'platformUnderlight',
+    new Vector3(0, CONFIG.lighting.underlightY, 0),
+    scene,
+  );
+  underlight.intensity = CONFIG.lighting.underlightIntensity;
+  underlight.diffuse   = new Color3(1, 1, 1);
+  underlight.specular  = new Color3(0, 0, 0);
 
   // --- Log de valores de cámara en tiempo real (para ajustar defaults de CONFIG.camera) ---
   let camLogTimer: number | null = null;
