@@ -6,6 +6,7 @@ export type VoiceCallbacks = {
   onError: (message: string) => void;
   onTimeout?: () => void;
   onReady?: () => void;
+  onInterim?: (text: string) => void;
 };
 
 export interface VoiceEngine {

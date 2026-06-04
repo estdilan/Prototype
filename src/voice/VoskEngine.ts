@@ -156,6 +156,7 @@ export class VoskEngine implements VoiceEngine {
 
   #processTranscript(text: string, isFinal: boolean) {
     this.#resetSilenceTimer();
+    this.cb.onInterim?.(text);
     const colorsInText = extractAllColors(text);
 
     for (let i = this.emittedColorsForUtterance.length; i < colorsInText.length; i++) {

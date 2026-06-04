@@ -171,6 +171,7 @@ export class DeepgramEngine implements VoiceEngine {
 
   #processTranscript(text: string, isFinal: boolean) {
     this.#resetSilenceTimer();
+    this.cb.onInterim?.(text);
 
     const colorsInText = extractAllColors(text);
 

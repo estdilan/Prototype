@@ -21,13 +21,12 @@ export class GameManager {
   private voice!: VoiceController;
   private audio!: AudioManager;
   private calibrationVoice: VoiceController | null = null;
-  private calibrationTimer: number | null = null;
   private calibrationIndex = 0;
-  private calibrationRetriesLeft = 0;
   private calibrationOrder: ColorName[] = CONFIG.calibration.words;
 
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   private timeLeft = 0;
+  private postCalibrationInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(scene: Scene, ui: UIManager) {
     this.scene = scene;
@@ -88,19 +87,15 @@ export class GameManager {
     this.#cleanupCalibration();
     this.calibrationOrder = CONFIG.calibration.words;
     this.calibrationIndex = 0;
-    this.calibrationRetriesLeft = CONFIG.calibration.maxRetries;
 
-    const first = this.calibrationOrder[this.calibrationIndex];
-    this.ui.setCalibrationActive(first);
+    this.ui.setCalibrationActive(this.calibrationOrder[0]);
 
     this.calibrationVoice = new VoiceController({
-      onColor: (color) => this.#onCalibrationColor(color),
+      onColor:   (color) => this.#onCalibrationColor(color),
       onSilence: () => {},
-      onReady: () => {
-        console.log('[Rockey] Calibration engine ready — starting timer');
-        this.#armCalibrationTimer();
-      },
-      onError: (msg) => {
+      onInterim: (text)  => this.ui.showCalibrationInterim(text),
+      onReady:   () => this.ui.setCalibrationStatus('Escuchando... di el color'),
+      onError:   (msg) => {
         console.error(`[Rockey] Calibration error: ${msg}`);
         this.ui.showMicError(msg);
         this.#cleanupCalibration();
@@ -112,55 +107,46 @@ export class GameManager {
 
   #onCalibrationColor(color: ColorName): void {
     const expected = this.calibrationOrder[this.calibrationIndex];
-    if (color !== expected) {
-      this.ui.setCalibrationStatus(`Di: ${expected.toUpperCase()}`, true);
-      return;
-    }
+    if (color !== expected) return;
 
     this.ui.setCalibrationDetected(color);
     this.calibrationIndex++;
 
     if (this.calibrationIndex >= this.calibrationOrder.length) {
-      this.#clearCalibrationTimer();
       this.calibrationVoice?.stop();
       this.calibrationVoice = null;
-      this.ui.showCalibrationReady();
+      window.setTimeout(() => this.#startPostCalibrationCountdown(), 800);
       return;
     }
 
     const next = this.calibrationOrder[this.calibrationIndex];
-    this.ui.setCalibrationActive(next);
-    this.#armCalibrationTimer();
+    window.setTimeout(() => this.ui.setCalibrationActive(next), 600);
   }
 
-  #armCalibrationTimer(): void {
-    this.#clearCalibrationTimer();
-    this.calibrationTimer = window.setTimeout(() => {
-      this.#onCalibrationTimeout();
-    }, CONFIG.calibration.timeoutMs);
+  #startPostCalibrationCountdown(): void {
+    let count = 5;
+    this.ui.showCalibrationCountdown(count);
+    this.postCalibrationInterval = setInterval(() => {
+      count--;
+      if (count <= 0) {
+        clearInterval(this.postCalibrationInterval!);
+        this.postCalibrationInterval = null;
+        this.#onStartPressed();
+      } else {
+        this.ui.showCalibrationCountdown(count);
+      }
+    }, 1000);
   }
 
-  #onCalibrationTimeout(): void {
-    if (this.calibrationRetriesLeft > 0) {
-      this.calibrationRetriesLeft -= 1;
-      this.ui.showCalibrationTimeout(this.calibrationRetriesLeft);
-      this.#armCalibrationTimer();
-      return;
-    }
-
-    this.ui.showCalibrationTimeout(0);
-    this.#cleanupCalibration();
-  }
-
-  #clearCalibrationTimer(): void {
-    if (this.calibrationTimer) {
-      clearTimeout(this.calibrationTimer);
-      this.calibrationTimer = null;
+  #clearPostCalibrationCountdown(): void {
+    if (this.postCalibrationInterval) {
+      clearInterval(this.postCalibrationInterval);
+      this.postCalibrationInterval = null;
     }
   }
 
   #cleanupCalibration(): void {
-    this.#clearCalibrationTimer();
+    this.#clearPostCalibrationCountdown();
     if (this.calibrationVoice) {
       this.calibrationVoice.stop();
       this.calibrationVoice = null;

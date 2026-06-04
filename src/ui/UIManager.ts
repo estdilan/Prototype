@@ -26,8 +26,10 @@ export class UIManager {
   private startBtn: HTMLElement;
   private welcomeStartBtn: HTMLElement;
   private statStreak: HTMLElement;
+  private calibrationCountdownEl: HTMLElement;
   private calibrationItems = new Map<ColorName, HTMLElement>();
   private calibrationFlashTimeout: number | null = null;
+  private interimBlockedUntil = 0;
 
   private currentStreak = 0;
   private maxStreak = 0;
@@ -59,6 +61,7 @@ export class UIManager {
     this.calibrationScreenEl = this.#q('#calibration-screen');
     this.calibrationStatusEl = this.#q('#calibration-status');
     this.calibrationVisualizer = this.#q('#calibration-visualizer');
+    this.calibrationCountdownEl = this.#q('#calibration-countdown');
     this.startBtn = this.#q('#start-btn');
     this.welcomeStartBtn = this.#q('#welcome-start-btn');
     this.statStreak   = this.#q('#stat-streak');
@@ -210,7 +213,8 @@ export class UIManager {
       item.classList.toggle('active', key === color);
     });
     this.calibrationVisualizer.className = `calibration-visualizer c-${color}`;
-    this.setCalibrationStatus(`Siguiente: ${color.toUpperCase()}`);
+    this.setCalibrationStatus(`Di: ${color.toUpperCase()}`);
+    this.interimBlockedUntil = Date.now() + 1200;
   }
 
   setCalibrationDetected(color: ColorName): void {
@@ -219,7 +223,23 @@ export class UIManager {
       item.classList.remove('active');
       item.classList.add('done');
     }
+    this.setCalibrationStatus(`✓ ${color.toUpperCase()} reconocido`);
+    this.interimBlockedUntil = Date.now() + 900;
     this.#flashCalibrationVisualizer();
+  }
+
+  showCalibrationInterim(text: string): void {
+    if (text && Date.now() >= this.interimBlockedUntil) {
+      this.calibrationStatusEl.textContent = text;
+    }
+  }
+
+  showCalibrationCountdown(seconds: number): void {
+    this.calibrationScreenEl.classList.add('ready', 'counting');
+    this.calibrationCountdownEl.textContent = String(seconds);
+    this.calibrationCountdownEl.classList.remove('tick');
+    requestAnimationFrame(() => this.calibrationCountdownEl.classList.add('tick'));
+    this.setCalibrationStatus(seconds === 5 ? 'Calibración completa' : `Comenzando en ${seconds}...`);
   }
 
   showCalibrationReady(): void {
@@ -241,7 +261,8 @@ export class UIManager {
   }
 
   resetCalibrationUI(): void {
-    this.calibrationScreenEl.classList.remove('ready');
+    this.calibrationScreenEl.classList.remove('ready', 'counting');
+    this.interimBlockedUntil = 0;
     this.calibrationItems.forEach((item) => {
       item.classList.remove('active', 'done');
     });
