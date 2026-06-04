@@ -148,7 +148,7 @@ export class PelletManager {
       body.angularDamping = playAngularDamping;
       // Fricción suficiente para no desparramar en reposo, pero cede al inclinar
       if (body.material) {
-        body.material.friction    = 0.12;
+        body.material.friction    = 0.06;
         body.material.restitution = 0.03;
       }
     }

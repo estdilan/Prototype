@@ -22,7 +22,7 @@ export const CONFIG = {
     // Físicas fase SPAWN: alta fricción para formar montaña
     mass: 8,
     restitution: 0.03,
-    friction: 0.55,
+    friction: 0.275,
     linearDamping: 0.25,
     angularDamping: 0.45,
     initialVelocityY: -6,

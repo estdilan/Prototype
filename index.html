@@ -121,59 +121,17 @@
   <button id="mic-fix-btn" class="btn-secondary btn-small">Intentar Reconectar</button>
 </div>
 
-<!-- Victory -->
-<div id="victory" class="panel">
-  <div class="end-card end-card--victory">
-
-    <div class="end-icon end-icon--victory" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" opacity="0.35"/>
-        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" stroke-dasharray="125.66" stroke-dashoffset="125.66" class="end-icon__ring"/>
-        <polyline points="14,25 21,32 34,17" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
-    <div class="end-header">
-      <p id="victory-label" class="end-eyebrow ui-text highlight">NIVEL COMPLETADO</p>
-      <div id="victory-score" class="end-score display-text">0</div>
-      <p class="end-sub ui-text" style="opacity:0.5">PELLETS COMPLETADOS</p>
-    </div>
-
-    <div class="end-divider"></div>
-
-    <div class="end-actions">
-      <button id="victory-restart" class="btn-primary btn-start">VOLVER A EMPEZAR</button>
-    </div>
-
-  </div>
+<!-- Cinematic score overlay -->
+<div id="cinematic-score" aria-hidden="true">
+  <div id="cin-score-value">000</div>
+  <div id="cin-score-of">/ 400</div>
+  <p class="cin-score-label">DISCOS ANOTADOS</p>
 </div>
 
-<!-- Game Over -->
-<div id="game-over" class="panel">
-  <div class="end-card end-card--gameover">
-
-    <div class="end-icon end-icon--gameover" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" opacity="0.35"/>
-        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" stroke-dasharray="125.66" stroke-dashoffset="125.66" class="end-icon__ring"/>
-        <line x1="16" y1="16" x2="32" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        <line x1="32" y1="16" x2="16" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-    </div>
-
-    <div class="end-header">
-      <p id="game-over-label" class="end-eyebrow ui-text warning">TIEMPO AGOTADO</p>
-      <div id="game-over-score" class="end-score display-text">0</div>
-      <p id="game-over-sub" class="end-sub ui-text">PELLETS COMPLETADOS</p>
-    </div>
-
-    <div class="end-divider"></div>
-
-    <div class="end-actions">
-      <button id="game-over-restart" class="btn-primary btn-start">INTENTAR DE NUEVO</button>
-    </div>
-
-  </div>
+<!-- Session high score corner -->
+<div id="high-score-corner">
+  <span class="hs-label">MEJOR</span>
+  <span id="hs-value">---</span>
 </div>
 
 <!-- Microphone indicator -->
@@ -191,6 +149,8 @@
 <div id="cinematic-blackfill" aria-hidden="true"></div>
 <div id="cinematic-logo"      aria-hidden="true">
   <img src="/logo-removebg-preview.png" alt="Logo" id="cinematic-logo-img" />
+  <p class="anniversary-year">25 Aniversario</p>
+  <p class="anniversary-program">Programa Ingeniería en Multimedia</p>
 </div>
 
 <script type="module" src="/src/main.ts"></script>

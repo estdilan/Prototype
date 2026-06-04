@@ -7,8 +7,6 @@ export class UIManager {
   private micWrap: HTMLElement;
   private micFills: NodeListOf<Element>;
   private micStrokes: NodeListOf<Element>;
-  private victoryEl: HTMLElement;
-  private victoryNum: HTMLElement;
   private loadingEl: HTMLElement;
   private loadingFill: HTMLElement;
   private loadingText: HTMLElement;
@@ -16,8 +14,6 @@ export class UIManager {
   private micError: HTMLElement;
   private micFixBtn: HTMLElement;
   private timerEl: HTMLElement;
-  private gameOverEl: HTMLElement;
-  private gameOverNum: HTMLElement;
   private startScreenEl: HTMLElement;
   private welcomeScreenEl: HTMLElement;
   private calibrationScreenEl: HTMLElement;
@@ -32,6 +28,12 @@ export class UIManager {
   private cinematicVignette: HTMLElement;
   private cinematicBlackfill: HTMLElement;
   private cinematicLogo: HTMLElement;
+  private cinematicScore: HTMLElement;
+  private cinScoreValue: HTMLElement;
+  private cinScoreOf: HTMLElement;
+  private highScoreCorner: HTMLElement;
+  private highScoreValue: HTMLElement;
+  private sessionHighScore = -1;
 
   onStart?: () => void;
   onCalibrationComplete?: () => void;
@@ -43,9 +45,6 @@ export class UIManager {
     this.micWrap     = this.#q('#mic-wrap');
     this.micFills    = document.querySelectorAll('#mic-svg [fill]:not([fill="none"])');
     this.micStrokes  = document.querySelectorAll('#mic-svg [stroke]');
-    
-    this.victoryEl   = this.#q('#victory');
-    this.victoryNum  = this.#q('#victory-score');
     this.loadingEl   = this.#q('#loading');
     this.loadingFill = this.#q('#loading-fill');
     this.loadingText = this.#q('#loading-text');
@@ -53,8 +52,6 @@ export class UIManager {
     this.micError    = this.#q('#mic-error');
     this.micFixBtn   = this.#q('#mic-fix-btn');
     this.timerEl      = this.#q('#timer');
-    this.gameOverEl   = this.#q('#game-over');
-    this.gameOverNum  = this.#q('#game-over-score');
     this.startScreenEl = this.#q('#start-screen');
     this.welcomeScreenEl = this.#q('#welcome-screen');
     this.calibrationScreenEl = this.#q('#calibration-screen');
@@ -66,17 +63,26 @@ export class UIManager {
     this.cinematicVignette   = this.#q('#cinematic-vignette');
     this.cinematicBlackfill  = this.#q('#cinematic-blackfill');
     this.cinematicLogo       = this.#q('#cinematic-logo');
+    this.cinematicScore      = this.#q('#cinematic-score');
+    this.cinScoreValue       = this.#q('#cin-score-value');
+    this.cinScoreOf          = this.#q('#cin-score-of');
+    this.highScoreCorner     = this.#q('#high-score-corner');
+    this.highScoreValue      = this.#q('#hs-value');
+
+    const stored = sessionStorage.getItem('rockey_high_score');
+    if (stored !== null) {
+      this.sessionHighScore = parseInt(stored, 10);
+      this.highScoreValue.textContent = String(this.sessionHighScore).padStart(3, '0');
+      this.highScoreCorner.classList.add('visible');
+    }
+
     document.querySelectorAll<HTMLElement>('#calibration-list .calibration-item').forEach((item) => {
       const color = item.dataset.color as ColorName | undefined;
       if (color) this.calibrationItems.set(color, item);
     });
 
-    this.#q('#victory-restart').addEventListener('click', () => window.location.reload());
-    this.#q('#game-over-restart').addEventListener('click', () => window.location.reload());
-    
     this.micFixBtn.addEventListener('click', () => {
       this.micFeedbackPanel.style.display = 'none';
-      // Ideally re-trigger mic request here.
     });
     this.welcomeStartBtn.addEventListener('click', () => {
       this.onStart?.();
@@ -125,7 +131,7 @@ export class UIManager {
   setMicColor(color: ColorName): void {
     const hex = CONFIG.colors[color].hex;
     this.micWrap.className = `c-${color}`;
-    
+
     this.micFills.forEach(el => el.setAttribute('fill', hex));
     this.micStrokes.forEach(el => el.setAttribute('stroke', hex));
 
@@ -153,11 +159,6 @@ export class UIManager {
     this.scoreEl.textContent = String(value).padStart(3, '0');
     this.scoreEl.classList.add('bump');
     setTimeout(() => this.scoreEl.classList.remove('bump'), 160);
-  }
-
-  showVictory(finalScore: number): void {
-    this.victoryNum.textContent = String(finalScore).padStart(3, '0');
-    this.victoryEl.classList.add('show');
   }
 
   showWelcomeScreen(): void {
@@ -198,86 +199,66 @@ export class UIManager {
     }
   }
 
-  showGameOver(score: number): void {
-    this.gameOverNum.textContent = String(score).padStart(3, '0');
-    this.gameOverEl.classList.add('show');
-    this.hideMic();
-  }
+  showEndSequence(score: number, maxScore: number): void {
+    // Update session high score
+    if (score > this.sessionHighScore) {
+      this.sessionHighScore = score;
+      sessionStorage.setItem('rockey_high_score', String(this.sessionHighScore));
+    }
+    this.highScoreValue.textContent = String(this.sessionHighScore).padStart(3, '0');
+    this.highScoreCorner.classList.add('visible');
 
-  showCinematicGameOver(score: number): void {
-    this.gameOverNum.textContent = String(score).padStart(3, '0');
-    this.hideMic();
+    const blackfill = this.cinematicBlackfill;
+    const logo      = this.cinematicLogo;
+    const scoreEl   = this.cinematicScore;
 
-    const vignette   = this.cinematicVignette;
-    const blackfill  = this.cinematicBlackfill;
-    const logo       = this.cinematicLogo;
-
-    // Reset all layers
-    vignette.className  = '';
+    // Reset layers
     blackfill.className = '';
     logo.className      = '';
+    scoreEl.className   = '';
+    void blackfill.offsetWidth; // force reflow before animation
 
-    // Phase 1 — vignette ring grows inward (2800 ms)
-    vignette.className = 'active';
+    // Phase 1 — fade to black over 3 000 ms
+    blackfill.className = 'fade-in-slow';
 
-    // Phase 2 — black fill fades in over the vignette (starts at 1800 ms, lasts 1600 ms)
-    const t2 = 1800;
-    setTimeout(() => { blackfill.className = 'fade-in'; }, t2);
-
-    // Phase 3 — black fill fully opaque; show logo (starts at t2 + 1600 ms)
-    const t3 = t2 + 1600;
+    // Phase 2 — at t=3 000: show score overlay for 5 000 ms
     setTimeout(() => {
-      vignette.className  = 'hold';
       blackfill.className = 'hold';
-      logo.className      = 'phase-in';
-    }, t3);
+      this.cinScoreValue.textContent = String(score).padStart(3, '0');
+      this.cinScoreOf.textContent    = `/ ${maxScore}`;
+      scoreEl.className = 'show';
+    }, 3000);
 
-    // Phase 4 — logo settled (starts at t3 + 1400 ms)
-    const t4 = t3 + 1400;
-    setTimeout(() => { logo.className = 'phase-hold'; }, t4);
-
-    // Phase 5 — hold logo visible (2400 ms), then start fade-out
-    // Logo dissolves first; blackfill follows 400 ms later so the logo exits on solid black
-    const t5 = t4 + 2400;
-    setTimeout(() => { logo.className = 'phase-out'; }, t5);
-    setTimeout(() => { blackfill.className = 'fade-out'; }, t5 + 400);
-
-    // Phase 6 — fully out (logo: 1800 ms + 400 ms stagger = 2200 ms): reveal game-over panel
-    const t6 = t5 + 2200;
+    // Phase 3 — at t=8 000: fade out score, start logo entrance
     setTimeout(() => {
-      vignette.className  = '';
+      scoreEl.className = 'hide';
+    }, 8000);
+
+    setTimeout(() => {
+      scoreEl.className = '';
+      logo.className    = 'phase-in';
+    }, 8600);
+
+    // Phase 3b — at t=10 000: logo fully settled
+    setTimeout(() => {
+      logo.className = 'phase-hold';
+    }, 10000);
+
+    // Phase 4 — at t=18 000: logo fades out, then blackfill fades in
+    setTimeout(() => {
+      logo.className = 'phase-out';
+    }, 18000);
+
+    setTimeout(() => {
       blackfill.className = '';
-      logo.className      = '';
-      this.gameOverEl.classList.add('show');
-      this.#wireCinematicRestart();
-    }, t6);
-  }
+      void blackfill.offsetWidth;
+      blackfill.className = 'fade-in-slow';
+    }, 18400);
 
-  #wireCinematicRestart(): void {
-    const btn = document.querySelector<HTMLElement>('#game-over-restart');
-    if (!btn) return;
-
-    const handler = (e: Event) => {
-      e.stopImmediatePropagation();
-      btn.removeEventListener('click', handler);
-      this.#triggerCinematicOut(() => window.location.reload());
-    };
-
-    btn.addEventListener('click', handler);
-  }
-
-  #triggerCinematicOut(onComplete: () => void): void {
-    const vignette  = this.cinematicVignette;
-    const blackfill = this.cinematicBlackfill;
-
-    // Phase A — fade to black: blackfill fades in over 1.2 s
-    vignette.className  = 'hold';
-    blackfill.className = '';
-    void blackfill.offsetWidth;
-    blackfill.className = 'fade-in';
-
-    // Phase B — fully black: call onComplete (reload)
-    setTimeout(() => { onComplete(); }, 1300);
+    // Phase 5 — at t=21 400: reload
+    setTimeout(() => {
+      window.location.reload();
+    }, 21400);
   }
 
   setCalibrationActive(color: ColorName): void {
@@ -346,7 +327,6 @@ export class UIManager {
     const outgoing = section === 'welcome' ? this.calibrationScreenEl : this.welcomeScreenEl;
 
     if (!outgoing.classList.contains('active')) {
-      // Nada saliendo — entra directo
       incoming.classList.add('active');
       return;
     }
@@ -355,15 +335,12 @@ export class UIManager {
   }
 
   #transitionSections(from: HTMLElement, to: HTMLElement): void {
-    const LEAVE_MS = 380; // debe coincidir con la duración de .leaving en el CSS
+    const LEAVE_MS = 380;
 
     from.classList.add('leaving');
     from.classList.remove('active');
 
-    // Limpia .leaving cuando termina su animación de salida
     setTimeout(() => from.classList.remove('leaving'), LEAVE_MS);
-
-    // La entrante espera un poco para que no se solapen
     setTimeout(() => to.classList.add('active'), 80);
   }
 

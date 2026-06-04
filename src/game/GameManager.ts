@@ -76,9 +76,11 @@ export class GameManager {
   #enterStart(): void {
     this.state = 'START';
     this.ui.showWelcomeScreen();
+    this.audio.setBgVolume(0.4);
   }
 
   #onCalibrationStart(): void {
+    this.audio.setBgVolume(0.05);
     this.ui.showCalibrationScreen();
     this.#startCalibrationFlow();
   }
@@ -179,6 +181,7 @@ export class GameManager {
 
   #enterPlaying(): void {
     this.state = 'PLAYING';
+    this.audio.setBgVolume(0.1);
     this.pellets.enableSlideMode();
     this.ui.hideSpawnBar();
     this.ui.showMic();
@@ -208,31 +211,23 @@ export class GameManager {
 
   #enterVictory(): void {
     this.state = 'VICTORY';
+    this.audio.setBgVolume(0.4);
     this.#clearCountdown();
     this.voice.stop();
     this.ui.hideMic();
     this.ui.hideTimer();
-    this.ui.showVictory(this.pellets.currentScore);
     console.log('[Rockey] Victory!');
+    this.ui.showEndSequence(this.pellets.currentScore, CONFIG.pellets.total);
   }
 
   #enterGameOver(): void {
     this.state = 'GAME_OVER';
+    this.audio.setBgVolume(0.4);
     this.#clearCountdown();
     this.voice.stop();
     this.ui.hideMic();
     this.ui.hideTimer();
-
-    const score     = this.pellets.currentScore;
-    const threshold = CONFIG.pellets.total - 50;
-    const nearMiss  = score >= threshold;
-
-    if (nearMiss) {
-      console.log(`[Rockey] Game Over — near miss (${score}/${CONFIG.pellets.total}), playing cinematic`);
-      this.ui.showCinematicGameOver(score);
-    } else {
-      this.ui.showGameOver(score);
-      console.log('[Rockey] Game Over — time ran out');
-    }
+    console.log('[Rockey] Game Over');
+    this.ui.showEndSequence(this.pellets.currentScore, CONFIG.pellets.total);
   }
 }
