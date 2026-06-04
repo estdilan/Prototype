@@ -96,6 +96,10 @@ export class GameManager {
     this.calibrationVoice = new VoiceController({
       onColor: (color) => this.#onCalibrationColor(color),
       onSilence: () => {},
+      onReady: () => {
+        console.log('[Rockey] Calibration engine ready — starting timer');
+        this.#armCalibrationTimer();
+      },
       onError: (msg) => {
         console.error(`[Rockey] Calibration error: ${msg}`);
         this.ui.showMicError(msg);
@@ -104,7 +108,6 @@ export class GameManager {
     });
 
     this.calibrationVoice.start();
-    this.#armCalibrationTimer();
   }
 
   #onCalibrationColor(color: ColorName): void {

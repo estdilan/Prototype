@@ -82,8 +82,11 @@ export class DeepgramEngine implements VoiceEngine {
       this.state = 'ERROR';
     };
 
-    this.socket.onclose = () => {
-      console.log('[Voice/Deepgram] WebSocket cerrado');
+    this.socket.onclose = (event) => {
+      console.log('[Voice/Deepgram] WebSocket cerrado', event.code, event.reason);
+      if (this.state === 'LISTENING') {
+        this.cb.onError(`Conexión Deepgram cerrada inesperadamente (código ${event.code})`);
+      }
       this.stop();
     };
   }
@@ -124,28 +127,35 @@ export class DeepgramEngine implements VoiceEngine {
     this.audioContext = new AudioContext({ sampleRate: 16000 });
     const source = this.audioContext.createMediaStreamSource(this.mediaStream);
 
-    this.audioContext.audioWorklet.addModule('/audio-worklet.js').then(() => {
-      if (!this.audioContext) return;
-      this.processor = new AudioWorkletNode(this.audioContext, 'audio-processor');
-      source.connect(this.processor);
-      this.processor.connect(this.audioContext.destination);
+    // Resume is required: AudioContext created in async callbacks can start suspended.
+    this.audioContext.resume()
+      .then(() => this.audioContext!.audioWorklet.addModule('/audio-worklet.js'))
+      .then(() => {
+        if (!this.audioContext) return;
+        this.processor = new AudioWorkletNode(this.audioContext, 'audio-processor');
+        source.connect(this.processor);
+        this.processor.connect(this.audioContext.destination);
 
-      this.processor.port.onmessage = (event) => {
-        if (this.socket?.readyState !== WebSocket.OPEN) return;
+        this.processor.port.onmessage = (event) => {
+          if (this.socket?.readyState !== WebSocket.OPEN) return;
 
-        const pcm16: Int16Array = event.data.pcm16;
-        const buffer = new ArrayBuffer(pcm16.length * 2);
-        const view = new DataView(buffer);
-        for (let i = 0; i < pcm16.length; i++) {
-          view.setInt16(i * 2, pcm16[i], true);
-        }
-        this.socket!.send(buffer);
-      };
-    }).catch((err) => {
-      console.error('[Voice/Deepgram] Error cargando AudioWorklet:', err);
-      this.cb.onError('Error al inicializar el procesamiento de audio');
-      this.stop();
-    });
+          const pcm16: Int16Array = event.data.pcm16;
+          const buffer = new ArrayBuffer(pcm16.length * 2);
+          const view = new DataView(buffer);
+          for (let i = 0; i < pcm16.length; i++) {
+            view.setInt16(i * 2, pcm16[i], true);
+          }
+          this.socket!.send(buffer);
+        };
+
+        console.log('[Voice/Deepgram] Audio fluyendo hacia Deepgram');
+        this.cb.onReady?.();
+      })
+      .catch((err) => {
+        console.error('[Voice/Deepgram] Error cargando AudioWorklet:', err);
+        this.cb.onError('Error al inicializar el procesamiento de audio');
+        this.stop();
+      });
   }
 
   #resetSilenceTimer() {

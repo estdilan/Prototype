@@ -85,6 +85,7 @@ export class VoskEngine implements VoiceEngine {
     }
 
     this.audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+    await this.audioContext.resume();
     const source = this.audioContext.createMediaStreamSource(this.mediaStream);
 
     try {
@@ -109,6 +110,7 @@ export class VoskEngine implements VoiceEngine {
 
     this.state = 'LISTENING';
     console.log('[Voice/Vosk] Escuchando');
+    this.cb.onReady?.();
   }
 
   stop(): void {
