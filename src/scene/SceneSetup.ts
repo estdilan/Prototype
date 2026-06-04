@@ -44,21 +44,23 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   hemi.groundColor = new Color3(0.02, 0.02, 0.04);
   hemi.diffuse     = new Color3(0.15, 0.15, 0.25);  // tinte azulado nocturno
 
-  // --- Spotlights desde el techo del estadio hacia la plataforma ---
-  // 4 focos en las esquinas + 1 cenital sobre el centro
+  // --- 4 focos estadio apuntando a la plataforma ---
   const target = new Vector3(0, CONFIG.platform.y, 0);
-  const spotPositions: Array<[number, number, number, Color3]> = [
-    [ CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight,  CONFIG.lighting.spotRadius, new Color3(1.0, 0.95, 0.85)], // cálido frontal-derecho
-    [-CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight,  CONFIG.lighting.spotRadius, new Color3(0.85, 0.95, 1.0)], // frío frontal-izquierdo
-    [ CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight, -CONFIG.lighting.spotRadius, new Color3(0.85, 0.95, 1.0)], // frío trasero-derecho
-    [-CONFIG.lighting.spotRadius,  CONFIG.lighting.spotHeight, -CONFIG.lighting.spotRadius, new Color3(1.0, 0.95, 0.85)], // cálido trasero-izquierdo
-  ];
-  spotPositions.forEach(([x, y, z, color], i) => {
-    const pos = new Vector3(x, y, z);
-    const dir = target.subtract(pos).normalize();
-    const spot = new SpotLight(`spot${i}`, pos, dir, CONFIG.lighting.spotAngle, CONFIG.lighting.spotExponent, scene);
+  const r = CONFIG.lighting.spotRadius;
+  const h = CONFIG.lighting.spotHeight;
+  const white = new Color3(1, 1, 1);
+  [
+    new Vector3( r, h,  r),
+    new Vector3(-r, h,  r),
+    new Vector3( r, h, -r),
+    new Vector3(-r, h, -r),
+  ].forEach((pos, i) => {
+    const spot = new SpotLight(
+      `spot${i}`, pos, target.subtract(pos).normalize(),
+      CONFIG.lighting.spotAngle, CONFIG.lighting.spotExponent, scene,
+    );
     spot.intensity = CONFIG.lighting.spotIntensity;
-    spot.diffuse   = color;
+    spot.diffuse   = white;
   });
 
   // Spot cenital central sobre la plataforma (foco principal)

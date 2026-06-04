@@ -25,14 +25,10 @@ export class UIManager {
   private calibrationVisualizer: HTMLElement;
   private startBtn: HTMLElement;
   private welcomeStartBtn: HTMLElement;
-  private statStreak: HTMLElement;
   private calibrationCountdownEl: HTMLElement;
   private calibrationItems = new Map<ColorName, HTMLElement>();
   private calibrationFlashTimeout: number | null = null;
   private interimBlockedUntil = 0;
-
-  private currentStreak = 0;
-  private maxStreak = 0;
 
   onStart?: () => void;
   onCalibrationComplete?: () => void;
@@ -64,8 +60,6 @@ export class UIManager {
     this.calibrationCountdownEl = this.#q('#calibration-countdown');
     this.startBtn = this.#q('#start-btn');
     this.welcomeStartBtn = this.#q('#welcome-start-btn');
-    this.statStreak   = this.#q('#stat-streak');
-
     document.querySelectorAll<HTMLElement>('#calibration-list .calibration-item').forEach((item) => {
       const color = item.dataset.color as ColorName | undefined;
       if (color) this.calibrationItems.set(color, item);
@@ -129,8 +123,6 @@ export class UIManager {
     this.micFills.forEach(el => el.setAttribute('fill', hex));
     this.micStrokes.forEach(el => el.setAttribute('stroke', hex));
 
-    this.currentStreak++;
-    if (this.currentStreak > this.maxStreak) this.maxStreak = this.currentStreak;
     this.micFeedbackPanel.style.display = 'none';
   }
 
@@ -149,7 +141,6 @@ export class UIManager {
     this.micWrap.className = 'error';
     this.micFills.forEach(el => el.setAttribute('fill', '#f55'));
     this.micStrokes.forEach(el => el.setAttribute('stroke', '#f55'));
-    this.currentStreak = 0;
   }
 
   updateScore(value: number): void {
@@ -203,7 +194,6 @@ export class UIManager {
 
   showGameOver(score: number): void {
     this.gameOverNum.textContent = String(score).padStart(3, '0');
-    this.statStreak.textContent = String(this.maxStreak);
     this.gameOverEl.classList.add('show');
     this.hideMic();
   }
@@ -213,7 +203,7 @@ export class UIManager {
       item.classList.toggle('active', key === color);
     });
     this.calibrationVisualizer.className = `calibration-visualizer c-${color}`;
-    this.setCalibrationStatus(`Di: ${color.toUpperCase()}`);
+    this.setCalibrationStatus('Di el color resaltado');
     this.interimBlockedUntil = Date.now() + 1200;
   }
 
@@ -239,7 +229,6 @@ export class UIManager {
     this.calibrationCountdownEl.textContent = String(seconds);
     this.calibrationCountdownEl.classList.remove('tick');
     requestAnimationFrame(() => this.calibrationCountdownEl.classList.add('tick'));
-    this.setCalibrationStatus(seconds === 5 ? 'Calibración completa' : `Comenzando en ${seconds}...`);
   }
 
   showCalibrationReady(): void {
@@ -266,7 +255,7 @@ export class UIManager {
     this.calibrationItems.forEach((item) => {
       item.classList.remove('active', 'done');
     });
-    this.setCalibrationStatus('Escuchando...');
+    this.setCalibrationStatus('Di el color resaltado');
     this.calibrationVisualizer.className = 'calibration-visualizer';
   }
 

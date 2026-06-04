@@ -184,18 +184,6 @@ button { font-family: var(--font-ui); font-size: 15px; font-weight: 700; letter-
   z-index: 1;
 }
 
-#calibration-title {
-  font-size: clamp(22px, 3vw, 34px);
-  letter-spacing: 0.08em;
-  margin: 0;
-}
-
-#calibration-eyebrow {
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  margin: 0;
-  text-transform: uppercase;
-}
 
 .calibration-body {
   display: grid;
@@ -215,7 +203,8 @@ button { font-family: var(--font-ui); font-size: 15px; font-weight: 700; letter-
   font-size: 11px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--color-text-dimmed);
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
   margin: 6px 0 0;
 }
 
@@ -242,23 +231,7 @@ button { font-family: var(--font-ui); font-size: 15px; font-weight: 700; letter-
   min-height: 58px;
 }
 
-.calibration-item .step-index {
-  font-size: 11px;
-  letter-spacing: 0.28em;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
-  width: 34px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
+.calibration-item .step-index { display: none; }
 
 .calibration-item .marker {
   width: 14px;
@@ -401,8 +374,27 @@ button { font-family: var(--font-ui); font-size: 15px; font-weight: 700; letter-
   0%   { transform: scale(1.4); opacity: 0.5; }
   100% { transform: scale(1);   opacity: 1; }
 }
-#calibration-screen.counting .calibration-countdown-display { display: block; }
-#calibration-screen.counting .calibration-visualizer { display: none; }
+#calibration-screen.counting .calibration-header,
+#calibration-screen.counting .calibration-body { display: none; }
+#calibration-screen.counting #start-btn { display: none !important; }
+#calibration-screen.counting .calibration-panel {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+#calibration-screen.counting .calibration-panel::before,
+#calibration-screen.counting .calibration-panel::after { display: none; }
+#calibration-screen.counting .calibration-footer {
+  min-height: 200px;
+  justify-content: center;
+  padding: 0;
+}
+#calibration-screen.counting .calibration-countdown-display {
+  display: block;
+  font-size: 160px;
+}
 
 #start-btn { display: none; }
 #calibration-screen.ready #start-btn { display: inline-flex; }

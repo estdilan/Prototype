@@ -94,7 +94,7 @@ export class GameManager {
       onColor:   (color) => this.#onCalibrationColor(color),
       onSilence: () => {},
       onInterim: (text)  => this.ui.showCalibrationInterim(text),
-      onReady:   () => this.ui.setCalibrationStatus('Escuchando... di el color'),
+      onReady:   () => this.ui.setCalibrationStatus('Es momento de usar la voz'),
       onError:   (msg) => {
         console.error(`[Rockey] Calibration error: ${msg}`);
         this.ui.showMicError(msg);

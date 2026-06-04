@@ -4,7 +4,7 @@ export type ColorName = 'rojo' | 'azul' | 'verde' | 'amarillo';
 
 export const CONFIG = {
   pellets: {
-    total: 100,
+    total: 200,
     spawnIntervalMs: 8,
     scale: 0.4,
     spawnXZ: 4.8,
@@ -72,20 +72,20 @@ export const CONFIG = {
   },
   lighting: {
     ambientIntensity: 0.08,   // luz ambiente general; subir para iluminar todo, bajar para más contraste
-    spotHeight: 28,           // altura desde la que bajan los 4 focos esquineros
-    spotRadius: 18,           // distancia horizontal de cada foco al centro
-    spotAngle: Math.PI / 3.5, // apertura del cono (mayor = haz más ancho)
-    spotExponent: 2,          // suavidad del borde del cono
-    spotIntensity: 800,       // brillo de cada foco esquinero
+    spotHeight: 38,           // altura desde la que bajan los 4 focos esquineros
+    spotRadius: 24,           // distancia horizontal de cada foco al centro
+    spotAngle: Math.PI / 3,   // apertura del cono — 60° cubre toda la plataforma con margen
+    spotExponent: 1,          // falloff suave para iluminación uniforme
+    spotIntensity: 3500,      // alta intensidad tipo estadio
     centerAngle: Math.PI / 4, // apertura del foco cenital
-    centerIntensity: 400,     // brillo del foco cenital sobre la plataforma
+    centerIntensity: 800,     // brillo del foco cenital sobre la plataforma
     underlightIntensity: 600, // luz blanca inferior de la plataforma
     underlightY: 2.0,         // altura del punto de luz inferior (debe quedar bajo la plataforma)
   },
   camera: {
     alpha: -0.499,       // ~-28.6°, encuadre elegido en runtime
     beta: 1.054,         // ~60.4°
-    y: 2.00,
+    y: 3.50,
     radius: 55.00,
     fovDeg: 28,
     minRadius: 35,       // evita zoom-in extremo
