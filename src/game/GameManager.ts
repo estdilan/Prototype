@@ -179,6 +179,7 @@ export class GameManager {
 
   #enterPlaying(): void {
     this.state = 'PLAYING';
+    this.pellets.enableSlideMode();
     this.ui.hideSpawnBar();
     this.ui.showMic();
     this.ui.setMicIdle();
@@ -221,7 +222,17 @@ export class GameManager {
     this.voice.stop();
     this.ui.hideMic();
     this.ui.hideTimer();
-    this.ui.showGameOver(this.pellets.currentScore);
-    console.log('[Rockey] Game Over — time ran out');
+
+    const score     = this.pellets.currentScore;
+    const threshold = CONFIG.pellets.total - 50;
+    const nearMiss  = score >= threshold;
+
+    if (nearMiss) {
+      console.log(`[Rockey] Game Over — near miss (${score}/${CONFIG.pellets.total}), playing cinematic`);
+      this.ui.showCinematicGameOver(score);
+    } else {
+      this.ui.showGameOver(score);
+      console.log('[Rockey] Game Over — time ran out');
+    }
   }
 }

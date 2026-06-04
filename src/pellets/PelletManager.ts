@@ -23,6 +23,7 @@ export class PelletManager {
   private pellets: Pellet[] = [];
   private counter = 0;
   private score = 0;
+  private currentSpawnPoint = 0;
 
   private templateRoot: AbstractMesh | null = null;
   private pelletDims = { radius: 0.2, height: 0.1 };
@@ -66,12 +67,18 @@ export class PelletManager {
   }
 
   spawn(): void {
-    const pos = this.#randomPos();
+    const pos = this.#getSpawnPos();
     const name = `p${this.counter++}`;
 
-    const physMesh = MeshBuilder.CreateCylinder(name, {
-      diameter: this.pelletDims.radius * 2,
-      height: this.pelletDims.height,
+    // Box collider ajustado al tamaño del pellet (mejor rendimiento y detección)
+    const width = this.pelletDims.radius * 2;
+    const height = this.pelletDims.height;
+    const depth = this.pelletDims.radius * 2;
+
+    const physMesh = MeshBuilder.CreateBox(name, {
+      width: width,
+      height: height,
+      depth: depth,
     }, this.scene);
     physMesh.isVisible = false;
     physMesh.isPickable = false;
@@ -83,7 +90,7 @@ export class PelletManager {
 
     physMesh.physicsImpostor = new PhysicsImpostor(
       physMesh,
-      PhysicsImpostor.CylinderImpostor,
+      PhysicsImpostor.BoxImpostor,
       { mass: CONFIG.pellets.mass, restitution: CONFIG.pellets.restitution, friction: CONFIG.pellets.friction },
       this.scene,
     );
@@ -94,7 +101,8 @@ export class PelletManager {
     body.allowSleep     = true;
     body.sleepSpeedLimit = 0.5;
     body.sleepTimeLimit  = 1.0;
-    body.angularFactor.set(0, 1, 0);
+    // Permitir rotación libre en todos los ejes para comportamiento granular natural
+    body.angularFactor.set(1, 1, 1);
 
     physMesh.physicsImpostor.setLinearVelocity(new Vector3(0, CONFIG.pellets.initialVelocityY, 0));
 
@@ -130,18 +138,38 @@ export class PelletManager {
 
   get currentScore(): number { return this.score; }
 
-  #randomPos() {
-    const { spawnXZ, spawnYMin, spawnYMax } = CONFIG.pellets;
+  enableSlideMode(): void {
+    const { playLinearDamping, playAngularDamping } = CONFIG.pellets;
+    for (const { physMesh } of this.pellets) {
+      const impostor = physMesh.physicsImpostor;
+      if (!impostor) continue;
+      const body = impostor.physicsBody;
+      body.linearDamping  = playLinearDamping;
+      body.angularDamping = playAngularDamping;
+      // Fricción suficiente para no desparramar en reposo, pero cede al inclinar
+      if (body.material) {
+        body.material.friction    = 0.12;
+        body.material.restitution = 0.03;
+      }
+    }
+  }
+
+  #getSpawnPos() {
+    const points = CONFIG.pellets.spawnPoints;
+    const point = points[this.currentSpawnPoint % points.length];
+    this.currentSpawnPoint++;
+    // Mínima variación para montaña compacta
+    const jitter = 0.05;
     return {
-      x: (Math.random() - 0.5) * spawnXZ * 2,
-      y: spawnYMin + Math.random() * (spawnYMax - spawnYMin),
-      z: (Math.random() - 0.5) * spawnXZ * 2,
+      x: point.x + (Math.random() - 0.5) * jitter * 2,
+      y: point.y + Math.random() * 0.3,
+      z: point.z + (Math.random() - 0.5) * jitter * 2,
     };
   }
 
   #respawn(idx: number): void {
     const { physMesh } = this.pellets[idx];
-    const p = this.#randomPos();
+    const p = this.#getSpawnPos();
     physMesh.position.set(p.x, p.y, p.z);
     physMesh.physicsImpostor?.setLinearVelocity(new Vector3(0, CONFIG.pellets.respawnVelocityY, 0));
     physMesh.physicsImpostor?.setAngularVelocity(Vector3.Zero());

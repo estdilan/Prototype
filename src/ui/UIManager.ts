@@ -29,6 +29,9 @@ export class UIManager {
   private calibrationItems = new Map<ColorName, HTMLElement>();
   private calibrationFlashTimeout: number | null = null;
   private interimBlockedUntil = 0;
+  private cinematicVignette: HTMLElement;
+  private cinematicBlackfill: HTMLElement;
+  private cinematicLogo: HTMLElement;
 
   onStart?: () => void;
   onCalibrationComplete?: () => void;
@@ -60,6 +63,9 @@ export class UIManager {
     this.calibrationCountdownEl = this.#q('#calibration-countdown');
     this.startBtn = this.#q('#start-btn');
     this.welcomeStartBtn = this.#q('#welcome-start-btn');
+    this.cinematicVignette   = this.#q('#cinematic-vignette');
+    this.cinematicBlackfill  = this.#q('#cinematic-blackfill');
+    this.cinematicLogo       = this.#q('#cinematic-logo');
     document.querySelectorAll<HTMLElement>('#calibration-list .calibration-item').forEach((item) => {
       const color = item.dataset.color as ColorName | undefined;
       if (color) this.calibrationItems.set(color, item);
@@ -196,6 +202,82 @@ export class UIManager {
     this.gameOverNum.textContent = String(score).padStart(3, '0');
     this.gameOverEl.classList.add('show');
     this.hideMic();
+  }
+
+  showCinematicGameOver(score: number): void {
+    this.gameOverNum.textContent = String(score).padStart(3, '0');
+    this.hideMic();
+
+    const vignette   = this.cinematicVignette;
+    const blackfill  = this.cinematicBlackfill;
+    const logo       = this.cinematicLogo;
+
+    // Reset all layers
+    vignette.className  = '';
+    blackfill.className = '';
+    logo.className      = '';
+
+    // Phase 1 — vignette ring grows inward (2800 ms)
+    vignette.className = 'active';
+
+    // Phase 2 — black fill fades in over the vignette (starts at 1800 ms, lasts 1600 ms)
+    const t2 = 1800;
+    setTimeout(() => { blackfill.className = 'fade-in'; }, t2);
+
+    // Phase 3 — black fill fully opaque; show logo (starts at t2 + 1600 ms)
+    const t3 = t2 + 1600;
+    setTimeout(() => {
+      vignette.className  = 'hold';
+      blackfill.className = 'hold';
+      logo.className      = 'phase-in';
+    }, t3);
+
+    // Phase 4 — logo settled (starts at t3 + 1400 ms)
+    const t4 = t3 + 1400;
+    setTimeout(() => { logo.className = 'phase-hold'; }, t4);
+
+    // Phase 5 — hold logo visible (2400 ms), then start fade-out
+    // Logo dissolves first; blackfill follows 400 ms later so the logo exits on solid black
+    const t5 = t4 + 2400;
+    setTimeout(() => { logo.className = 'phase-out'; }, t5);
+    setTimeout(() => { blackfill.className = 'fade-out'; }, t5 + 400);
+
+    // Phase 6 — fully out (logo: 1800 ms + 400 ms stagger = 2200 ms): reveal game-over panel
+    const t6 = t5 + 2200;
+    setTimeout(() => {
+      vignette.className  = '';
+      blackfill.className = '';
+      logo.className      = '';
+      this.gameOverEl.classList.add('show');
+      this.#wireCinematicRestart();
+    }, t6);
+  }
+
+  #wireCinematicRestart(): void {
+    const btn = document.querySelector<HTMLElement>('#game-over-restart');
+    if (!btn) return;
+
+    const handler = (e: Event) => {
+      e.stopImmediatePropagation();
+      btn.removeEventListener('click', handler);
+      this.#triggerCinematicOut(() => window.location.reload());
+    };
+
+    btn.addEventListener('click', handler);
+  }
+
+  #triggerCinematicOut(onComplete: () => void): void {
+    const vignette  = this.cinematicVignette;
+    const blackfill = this.cinematicBlackfill;
+
+    // Phase A — fade to black: blackfill fades in over 1.2 s
+    vignette.className  = 'hold';
+    blackfill.className = '';
+    void blackfill.offsetWidth;
+    blackfill.className = 'fade-in';
+
+    // Phase B — fully black: call onComplete (reload)
+    setTimeout(() => { onComplete(); }, 1300);
   }
 
   setCalibrationActive(color: ColorName): void {

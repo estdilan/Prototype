@@ -123,19 +123,56 @@
 
 <!-- Victory -->
 <div id="victory" class="panel">
-  <p id="victory-label" class="ui-text highlight">NIVEL COMPLETADO</p>
-  <div id="victory-score" class="display-text">0</div>
-  <button id="victory-restart" class="btn-primary">VOLVER A EMPEZAR</button>
+  <div class="end-card end-card--victory">
+
+    <div class="end-icon end-icon--victory" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" opacity="0.35"/>
+        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" stroke-dasharray="125.66" stroke-dashoffset="125.66" class="end-icon__ring"/>
+        <polyline points="14,25 21,32 34,17" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="end-header">
+      <p id="victory-label" class="end-eyebrow ui-text highlight">NIVEL COMPLETADO</p>
+      <div id="victory-score" class="end-score display-text">0</div>
+      <p class="end-sub ui-text" style="opacity:0.5">PELLETS COMPLETADOS</p>
+    </div>
+
+    <div class="end-divider"></div>
+
+    <div class="end-actions">
+      <button id="victory-restart" class="btn-primary btn-start">VOLVER A EMPEZAR</button>
+    </div>
+
+  </div>
 </div>
 
 <!-- Game Over -->
 <div id="game-over" class="panel">
-  <p id="game-over-label" class="ui-text warning">TIEMPO AGOTADO</p>
-  <div id="game-over-score" class="display-text">0</div>
-  <p id="game-over-sub" class="ui-text dimmed">PELLETS COMPLETADOS</p>
-  
-  <div class="button-group">
-    <button id="game-over-restart" class="btn-primary">INTENTAR DE NUEVO</button>
+  <div class="end-card end-card--gameover">
+
+    <div class="end-icon end-icon--gameover" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" opacity="0.35"/>
+        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2.5" stroke-dasharray="125.66" stroke-dashoffset="125.66" class="end-icon__ring"/>
+        <line x1="16" y1="16" x2="32" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <line x1="32" y1="16" x2="16" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="end-header">
+      <p id="game-over-label" class="end-eyebrow ui-text warning">TIEMPO AGOTADO</p>
+      <div id="game-over-score" class="end-score display-text">0</div>
+      <p id="game-over-sub" class="end-sub ui-text">PELLETS COMPLETADOS</p>
+    </div>
+
+    <div class="end-divider"></div>
+
+    <div class="end-actions">
+      <button id="game-over-restart" class="btn-primary btn-start">INTENTAR DE NUEVO</button>
+    </div>
+
   </div>
 </div>
 
@@ -147,6 +184,13 @@
     <line x1="12" y1="18" x2="12" y2="22" stroke="#888" stroke-width="2" stroke-linecap="round"/>
     <line x1="8"  y1="22" x2="16" y2="22" stroke="#888" stroke-width="2" stroke-linecap="round"/>
   </svg>
+</div>
+
+<!-- Cinematic Game-Over transition -->
+<div id="cinematic-vignette"  aria-hidden="true"></div>
+<div id="cinematic-blackfill" aria-hidden="true"></div>
+<div id="cinematic-logo"      aria-hidden="true">
+  <img src="/logo-removebg-preview.png" alt="Logo" id="cinematic-logo-img" />
 </div>
 
 <script type="module" src="/src/main.ts"></script>

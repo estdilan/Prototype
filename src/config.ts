@@ -4,35 +4,42 @@ export type ColorName = 'rojo' | 'azul' | 'verde' | 'amarillo';
 
 export const CONFIG = {
   pellets: {
-    total: 200,
-    spawnIntervalMs: 8,
+    total: 400,
+    spawnIntervalMs: 12,
     scale: 0.4,
-    spawnXZ: 4.8,
-    spawnYMin: 6.0,
-    spawnYMax: 18,
+    // Puntos de emisión muy juntos para montaña compacta
+    spawnPoints: [
+      { x: 0, y: 16, z: 0 },
+      { x: 0.4, y: 16.2, z: 0 },
+      { x: -0.4, y: 16.2, z: 0 },
+      { x: 0, y: 16.2, z: 0.4 },
+      { x: 0, y: 16.2, z: -0.4 },
+    ] as Array<{ x: number; y: number; z: number }>,
     exitY: 2.0,
     safetyY: -20,
     physHeight: 0.20,
-    physBase: -0.28,   // Y offset del visual relativo al centro del cilindro físico; tantear junto con physHeight
-    mass: 5,
-    restitution: 0.08,
-    friction: 0.02,
-    linearDamping: 0.06,
-    angularDamping: 0.35,
-    initialVelocityY: -18,
-    respawnVelocityY: -15,
+    physBase: -0.28,
+    // Físicas fase SPAWN: alta fricción para formar montaña
+    mass: 8,
+    restitution: 0.03,
+    friction: 0.55,
+    linearDamping: 0.25,
+    angularDamping: 0.45,
+    initialVelocityY: -6,
+    respawnVelocityY: -5,
     maxUpVelocityY: 6,
+    // Físicas fase JUEGO: estable en reposo, desliza al inclinar
+    playLinearDamping: 0.05,
+    playAngularDamping: 0.08,
   },
   platform: {
-    // Fallback dimensions used if platform.glb bounding box cannot be computed.
-    // Tune after inspecting the model in-browser.
     width: 12,
     height: 0.5,
     depth: 12,
     y: 4.4,
-    visualOffsetY: 0,   // desplaza solo el mesh visual de la plataforma; tantear en pasos de 0.05 para cerrar el gap
+    visualOffsetY: 0,
     restitution: 0.05,
-    friction: 0.02,
+    friction: 0.008,
   },
   // Slit AABBs in world space (platform center at origin).
   // These define where pellets pass through to score.
@@ -44,14 +51,14 @@ export const CONFIG = {
     { xMin: -5.4, xMax:  5.4,  zMin: -10.5, zMax: -9.6 }, // -Z gap
   ],
   tilt: {
-    baseDeg: 8,
-    maxDeg: 20,
-    incrementDeg: 4,
-    baseHoldSec: 1.2,
-    holdIncrementSec: 0.4,
-    snapSpeed: 20,
-    returnSpeed: 4,
-    silenceSpeed: 6,
+    baseDeg: 10,
+    maxDeg: 22,
+    incrementDeg: 3,
+    baseHoldSec: 1.5,
+    holdIncrementSec: 0.3,
+    snapSpeed: 15,
+    returnSpeed: 3,
+    silenceSpeed: 5,
   },
   voice: {
     silenceMs: 1600,
