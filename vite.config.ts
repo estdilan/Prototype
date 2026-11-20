@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -6,7 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'cannon-es': new URL('./node_modules/cannon-es/dist/cannon-es.js', import.meta.url).pathname,
+      'cannon-es': fileURLToPath(new URL('./node_modules/cannon-es/dist/cannon-es.js', import.meta.url)),
     },
   },
   optimizeDeps: {

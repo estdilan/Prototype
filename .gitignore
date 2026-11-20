@@ -23,11 +23,12 @@ dist/
 .history/
 
 # npm
-package-lock.json
 .npm
 .npmrc
 .cache
 *.tsbuildinfo
 
-# Vosk models (descargar localmente desde https://alphacephei.com/vosk/models)
+# Sólo se versiona el modelo español utilizado por el juego.
 public/models/vosk-model-*
+
+!public/models/vosk-model-small-es-0.42.tar.gz

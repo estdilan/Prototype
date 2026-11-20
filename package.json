@@ -16,6 +16,7 @@
     "vosk-browser": "^0.0.8"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "typescript": "^5.5.4",
     "vite": "^6.4.2"
   }

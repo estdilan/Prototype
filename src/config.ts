@@ -64,7 +64,7 @@ export const CONFIG = {
     silenceMs: 1600,
     colorLockMs: 400,
     lang: 'es-ES',
-    engine: (import.meta.env.VITE_VOICE_ENGINE ?? 'deepgram') as 'deepgram' | 'vosk',
+    engine: (import.meta.env.VITE_VOICE_ENGINE ?? 'vosk') as 'deepgram' | 'vosk',
     voskModelUrl: (import.meta.env.VITE_VOSK_MODEL_URL ?? '/models/vosk-model-small-es-0.42.tar.gz') as string,
   },
   jumbotron: {
