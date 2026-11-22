@@ -10,8 +10,12 @@ Al iniciar, el juego pide permiso para usar el micrófono. La calibración guía
 
 <p align="center">
   <a href="docs/calibracion.webp"><img src="docs/calibracion.webp" width="300" alt="Calibración de los comandos de voz"></a>
-  <a href="docs/partida.webp"><img src="docs/partida.webp" width="300" alt="La plataforma y las piezas durante una partida"></a>
+  <a href="docs/inclinacion.webp"><img src="docs/inclinacion.webp" width="300" alt="Plataforma inclinada mediante un comando de voz"></a>
 </p>
+
+Al finalizar la ronda, el juego presenta los discos anotados y la mejor puntuación de la sesión.
+
+<p align="center"><a href="docs/resultado.webp"><img src="docs/resultado.webp" width="600" alt="Resultado al finalizar la partida"></a></p>
 
 ## Ejecutar una copia local
 
