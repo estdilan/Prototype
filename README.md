@@ -9,8 +9,7 @@ Rockey es un juego de física en 3D que se controla con la voz. En una arena, 40
 Al iniciar, el juego pide permiso para usar el micrófono. La calibración guía al jugador por los cuatro colores antes de empezar la ronda. Durante la partida, repetir un color aumenta la inclinación en esa dirección. Al guardar silencio, la plataforma vuelve hacia el centro.
 
 <p align="center">
-  <a href="docs/calibracion.webp"><img src="docs/calibracion.webp" width="300" alt="Calibración de los comandos de voz"></a>
-  <a href="docs/inclinacion.webp"><img src="docs/inclinacion.webp" width="300" alt="Plataforma inclinada mediante un comando de voz"></a>
+  <a href="docs/inclinacion.webp"><img src="docs/inclinacion.webp" width="600" alt="Plataforma inclinada mediante un comando de voz"></a>
 </p>
 
 Al finalizar la ronda, el juego presenta los discos anotados y la mejor puntuación de la sesión.
