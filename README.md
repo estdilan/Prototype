@@ -41,6 +41,6 @@ El [modelo español Vosk Small ES 0.42](public/models/vosk-model-small-es-0.42.t
 
 ## Colaboradores
 
-- Dilan Jobany Garces Ortega
+- Dilan Garces
 - Simón Paipa
 - David Alvarado
